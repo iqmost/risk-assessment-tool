@@ -1,0 +1,2951 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>資訊資產盤點及風險評鑑工具</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #f0f4f8;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #e8edf3;
+  --bg-card: #f5f8fb;
+  --bg-hover: #eaf0f8;
+  --border: #d0d9e6;
+  --border-light: #b0bdd0;
+  --text-primary: #1a2535;
+  --text-secondary: #4a5c72;
+  --text-muted: #7a8fa8;
+  --accent: #1a6fd4;
+  --accent-dim: #155cb8;
+  --accent-glow: rgba(26,111,212,0.12);
+  --success: #1a8a3c;
+  --warning: #b07a00;
+  --danger: #cc2a22;
+  --risk-a: #cc2a22;
+  --risk-b: #b07a00;
+  --risk-c: #1a6fd4;
+  --risk-d: #1a8a3c;
+  --font-main: 'Noto Sans TC', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-main);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  font-size: 13px;
+}
+
+/* HEADER */
+.header {
+  background: linear-gradient(135deg, #1a4a8a 0%, #1a6fd4 100%);
+  border-bottom: 1px solid #1558b0;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  box-shadow: 0 2px 12px rgba(26,74,138,0.25);
+}
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.header-logo .shield {
+  width: 32px; height: 32px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  border: 1px solid rgba(255,255,255,0.3);
+}
+.header-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #ffffff;
+}
+.header-subtitle {
+  font-size: 11px;
+  color: rgba(255,255,255,0.65);
+  font-family: var(--font-mono);
+  margin-top: 1px;
+}
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.header-actions .btn {
+  background: rgba(255,255,255,0.15);
+  border-color: rgba(255,255,255,0.3);
+  color: #fff;
+}
+.header-actions .btn:hover {
+  background: rgba(255,255,255,0.28);
+  border-color: rgba(255,255,255,0.5);
+}
+.header-actions .btn-success {
+  background: rgba(26,138,60,0.7);
+  border-color: rgba(120,220,150,0.5);
+  color: #c8ffd8;
+}
+.header-actions .btn-success:hover { background: rgba(26,138,60,0.9); }
+
+/* BUTTONS */
+.btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 12px;
+  font-family: var(--font-main);
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn:hover { background: var(--bg-hover); border-color: var(--border-light); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-dim); }
+.btn-success { background: #d6f0e0; border-color: #5cb87a; color: var(--success); }
+.btn-success:hover { background: #c2e8d2; }
+.btn-danger { background: transparent; border-color: #e06060; color: var(--danger); }
+.btn-danger:hover { background: rgba(204,42,34,0.08); }
+.btn-sm { padding: 3px 8px; font-size: 11px; }
+.btn-icon { padding: 5px 8px; font-size: 14px; }
+
+/* MAIN LAYOUT */
+.main { padding: 20px 24px; }
+
+/* TOOLBAR */
+.toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.toolbar-section {
+  display: flex; gap: 8px; align-items: center;
+}
+.toolbar-divider {
+  width: 1px; height: 24px;
+  background: var(--border);
+  margin: 0 4px;
+}
+
+/* STATS BAR */
+.stats-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.stat-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 16px;
+  display: flex; align-items: center; gap: 10px;
+  min-width: 130px;
+  box-shadow: 0 1px 4px rgba(20,40,80,0.07);
+}
+.stat-icon { font-size: 18px; }
+.stat-value { font-size: 20px; font-weight: 700; font-family: var(--font-mono); line-height: 1; }
+.stat-label { font-size: 10px; color: var(--text-muted); margin-top: 2px; letter-spacing: 0.05em; text-transform: uppercase; }
+.stat-a .stat-value { color: var(--risk-a); }
+.stat-b .stat-value { color: var(--risk-b); }
+.stat-c .stat-value { color: var(--risk-c); }
+.stat-d .stat-value { color: var(--risk-d); }
+
+/* TABLE WRAPPER */
+.table-wrapper {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: calc(100vh - 220px);
+}
+
+/* TABLE */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1900px;
+}
+thead tr {
+  background: var(--bg-tertiary);
+}
+/* Row 1: section group labels — sticky at top of scroll container */
+thead tr:first-child th {
+  position: sticky;
+  top: 0;
+  z-index: 12;
+  height: 32px;
+}
+/* Row 2: column labels — sticky just below row 1 */
+thead tr:nth-child(2) th {
+  position: sticky;
+  top: 32px;
+  z-index: 11;
+}
+thead th {
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+  background: var(--bg-tertiary);
+}
+.th-group-inventory { background: #e8f0fb; color: #1a5fb0; border-bottom-color: rgba(26,111,212,0.35); }
+.th-group-risk-base { background: #fdf4e0; color: #7a5500; border-bottom-color: rgba(176,122,0,0.35); }
+.th-group-vuln      { background: #fdecea; color: #8a1a14; border-bottom-color: rgba(204,42,34,0.35); }
+.th-group-control   { background: #e6f5ec; color: #0e5c24; border-bottom-color: rgba(26,138,60,0.35); }
+
+tbody tr.asset-row {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+tbody tr.asset-row:hover { background: #eef4fd; }
+tbody tr.risk-row {
+  background: #fafcff;
+  border-bottom: 1px solid #e4ecf8;
+}
+tbody tr.risk-row:hover { background: #eef4fd; }
+tbody tr.risk-row td:first-child {
+  border-left: 3px solid var(--accent-dim);
+}
+
+td {
+  padding: 9px 12px;
+  vertical-align: middle;
+  border-right: 1px solid rgba(208,217,230,0.6);
+}
+td:last-child { border-right: none; }
+
+/* INPUTS IN TABLE */
+td input[type="text"], td textarea, td select {
+  width: 100%;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: var(--font-main);
+  padding: 5px 7px;
+  min-height: 30px;
+  transition: all 0.15s;
+  resize: none;
+}
+td input[type="text"]:focus, td textarea:focus, td select:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: #fff;
+  box-shadow: 0 0 0 2px rgba(26,111,212,0.12);
+}
+td input[type="text"]:hover, td textarea:hover, td select:hover {
+  border-color: var(--border-light);
+  background: #f5f8ff;
+}
+td select option { background: #fff; color: var(--text-primary); }
+td input[type="number"] {
+  width: 52px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: var(--font-mono);
+  padding: 5px 5px;
+  text-align: center;
+  min-height: 30px;
+}
+td input[type="number"]:focus {
+  outline: none; border-color: var(--accent); background: #fff;
+  box-shadow: 0 0 0 2px rgba(26,111,212,0.12);
+}
+td input[type="number"]:hover {
+  border-color: var(--border-light); background: #f5f8ff;
+}
+
+/* SCORE BADGES */
+.score-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 24px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid;
+}
+.score-1 { background: #d6f0e0; border-color: #90cca8; color: #1a6b32; }
+.score-2 { background: #fff0cc; border-color: #d4a830; color: #7a5500; }
+.score-3 { background: #fde8e6; border-color: #e07070; color: #8a1a14; }
+
+.av-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 32px; height: 24px; padding: 0 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  background: #ddeeff;
+  border: 1px solid #88b8f0;
+  color: var(--accent);
+}
+
+.risk-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 36px; height: 24px; padding: 0 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+}
+.risk-val { min-width: 42px; }
+.level-A { background: #fde8e6; border: 1px solid #e08080; color: var(--risk-a); }
+.level-B { background: #fff0cc; border: 1px solid #d4a830; color: var(--risk-b); }
+.level-C { background: #ddeeff; border: 1px solid #88b8f0; color: var(--risk-c); }
+.level-D { background: #d6f0e0; border: 1px solid #80c898; color: var(--risk-d); }
+
+/* EXPAND BUTTON */
+.expand-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 12px;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: all 0.15s;
+  display: inline-flex; align-items: center; gap: 4px;
+  white-space: nowrap;
+}
+.expand-btn:hover { color: var(--accent); background: var(--accent-glow); }
+
+/* ASSET TYPE TAG */
+.asset-type {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.type-硬體 { background: #eef0f3; border: 1px solid #b0bdd0; color: #4a5c72; }
+.type-軟體 { background: #ddeeff; border: 1px solid #88b8f0; color: #155cb8; }
+.type-資訊 { background: #fff0cc; border: 1px solid #d4a830; color: #7a5500; }
+.type-人員 { background: #d6f0e0; border: 1px solid #80c898; color: #1a6b32; }
+.type-服務 { background: #f0e6ff; border: 1px solid #c090e0; color: #6030a0; }
+
+/* MODAL */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(20,40,80,0.35);
+  z-index: 1000;
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 24px;
+  width: 700px;
+  max-width: 95vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 40px rgba(20,40,80,0.18);
+}
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+.modal-close {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-muted); font-size: 18px;
+  padding: 2px 6px; border-radius: 4px;
+}
+.modal-close:hover { color: var(--text-primary); background: var(--bg-hover); }
+
+/* FORM */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-full { grid-column: 1 / -1; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.form-input, .form-select, .form-textarea {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: var(--font-main);
+  padding: 8px 10px;
+  transition: border-color 0.15s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline: none; border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(26,111,212,0.12);
+}
+.form-select option { background: #fff; }
+.form-textarea { resize: vertical; min-height: 60px; }
+
+/* RISK LEVEL CONFIG */
+.risk-config {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.risk-config-title {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text-muted);
+  margin-bottom: 12px;
+}
+.risk-config-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+}
+.risk-config-item { display: flex; flex-direction: column; gap: 4px; }
+.risk-config-label {
+  font-size: 11px; font-weight: 700;
+}
+.risk-config-inputs { display: flex; align-items: center; gap: 4px; }
+.risk-config-inputs input {
+  width: 50px; padding: 4px 6px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-align: center;
+}
+.risk-config-inputs span { color: var(--text-muted); font-size: 12px; }
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+.empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
+.empty-text { font-size: 14px; margin-bottom: 8px; }
+.empty-sub { font-size: 12px; }
+
+/* SECTION HEADERS — row 1 of thead */
+.th-section {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0 10px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  font-weight: 700;
+  height: 32px;
+  line-height: 32px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* SCROLLBAR — thick, prominent, easy to grab */
+::-webkit-scrollbar { width: 14px; height: 14px; }
+::-webkit-scrollbar-track { background: #dce6f0; border-radius: 7px; }
+::-webkit-scrollbar-thumb {
+  background: #7a9cc0;
+  border-radius: 7px;
+  border: 3px solid #dce6f0;
+}
+::-webkit-scrollbar-thumb:hover { background: #4a78a8; }
+::-webkit-scrollbar-corner { background: #dce6f0; }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--text-primary);
+  z-index: 9999;
+  transform: translateY(80px);
+  opacity: 0;
+  transition: all 0.25s;
+  display: flex; align-items: center; gap: 8px;
+  box-shadow: 0 4px 20px rgba(20,40,80,0.15);
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { border-color: #80c898; }
+.toast.error { border-color: #e07070; }
+
+/* OPTION MANAGER */
+.option-manager {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.option-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(208,217,230,0.5);
+}
+.option-item:last-child { border-bottom: none; }
+.option-item-text { font-size: 12px; color: var(--text-primary); }
+.option-item-actions { display: flex; gap: 4px; }
+
+/* TABS */
+.modal-tabs {
+  display: flex; gap: 0;
+  margin-bottom: 16px;
+  border-bottom: 2px solid var(--border);
+}
+.tab-btn {
+  padding: 8px 16px;
+  background: none;
+  border: none; border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-size: 12px; font-family: var(--font-main);
+  cursor: pointer;
+  margin-bottom: -2px;
+  transition: all 0.15s;
+}
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.add-option-row {
+  display: flex; gap: 6px; margin-top: 8px;
+}
+.add-option-row input {
+  flex: 1; padding: 6px 8px;
+  background: #f8fafc; border: 1px solid var(--border);
+  border-radius: 4px; color: var(--text-primary); font-size: 12px;
+  font-family: var(--font-main);
+}
+.add-option-row input:focus { outline: none; border-color: var(--accent); }
+
+.col-asset-unit { min-width: 90px; }
+.col-asset-type { min-width: 90px; }
+.col-asset-name { min-width: 120px; }
+.col-asset-desc { min-width: 160px; }
+.col-asset-loc  { min-width: 100px; }
+.col-asset-note { min-width: 100px; }
+.col-owner      { min-width: 90px; }
+.col-qty        { min-width: 55px; }
+.col-cia        { min-width: 46px; }
+.col-av         { min-width: 55px; }
+.col-vuln       { min-width: 150px; }
+.col-score      { min-width: 46px; }
+.col-threat     { min-width: 150px; }
+.col-rv         { min-width: 55px; }
+.col-level      { min-width: 55px; }
+.col-control    { min-width: 180px; }
+.col-action     { min-width: 80px; }
+
+/* FILTER BUTTONS */
+.stat-divider {
+  width: 1px; height: 40px;
+  background: var(--border);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+.filter-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 2px solid;
+  font-size: 12px; font-weight: 700;
+  font-family: var(--font-main);
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+  opacity: 0.55;
+}
+.filter-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.filter-btn.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0,0,0,0.15); }
+.filter-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 20px; height: 20px; padding: 0 4px;
+  border-radius: 10px;
+  font-size: 11px; font-weight: 800;
+}
+.filter-A { background: #fde8e6; border-color: #cc2a22; color: #8a1a14; }
+.filter-A .filter-count { background: #cc2a22; color: #fff; }
+.filter-A.active { background: #fbd0cc; }
+.filter-B { background: #fff0cc; border-color: #b07a00; color: #7a5500; }
+.filter-B .filter-count { background: #b07a00; color: #fff; }
+.filter-B.active { background: #ffe4a0; }
+.filter-C { background: #ddeeff; border-color: #1a6fd4; color: #155cb8; }
+.filter-C .filter-count { background: #1a6fd4; color: #fff; }
+.filter-C.active { background: #c0daff; }
+.filter-D { background: #d6f0e0; border-color: #1a8a3c; color: #1a6b32; }
+.filter-D .filter-count { background: #1a8a3c; color: #fff; }
+.filter-D.active { background: #b0e4c8; }
+
+/* MAX RISK SUMMARY BADGE on asset row */
+.max-risk-summary {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px 3px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-family: var(--font-main);
+  border: 1px dashed;
+  opacity: 0.85;
+}
+.max-risk-summary .max-risk-level {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 800;
+}
+.max-risk-summary .max-risk-label {
+  font-size: 9px;
+  letter-spacing: 0.04em;
+}
+.max-A { background: #fde8e6; border-color: #cc2a22; color: #8a1a14; }
+.max-B { background: #fff0cc; border-color: #b07a00; color: #7a5500; }
+.max-C { background: #ddeeff; border-color: #1a6fd4; color: #155cb8; }
+.max-D { background: #d6f0e0; border-color: #1a8a3c; color: #1a6b32; }
+.max-none { background: #f0f4f8; border-color: #b0bdd0; color: #7a8fa8; }
+
+/* Hidden rows during filter */
+tr.filter-hidden { display: none; }
+
+/* VALIDATION — 必填欄位警示 */
+.field-error input,
+.field-error select {
+  border-color: #e06060 !important;
+  background: #fff5f5 !important;
+}
+.field-error input:focus,
+.field-error select:focus {
+  box-shadow: 0 0 0 2px rgba(204,42,34,0.15) !important;
+}
+.asset-row.has-error {
+  background: #fff8f8 !important;
+}
+.asset-row.has-error:hover { background: #ffeaea !important; }
+
+.validation-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 3px;
+  font-size: 10px; font-weight: 700;
+  background: #fde8e6; border: 1px solid #e08080;
+  color: #8a1a14; white-space: nowrap;
+}
+
+/* IDLE REMINDER */
+.idle-toast {
+  position: fixed; bottom: 80px; right: 24px;
+  background: #fff8e1;
+  border: 1px solid #ffe082;
+  border-left: 4px solid #f9a825;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 12px;
+  color: #5d4037;
+  z-index: 9998;
+  max-width: 300px;
+  box-shadow: 0 4px 16px rgba(20,40,80,0.12);
+  transform: translateX(340px);
+  transition: transform 0.3s ease;
+  line-height: 1.6;
+}
+.idle-toast.show { transform: translateX(0); }
+.idle-toast strong { display: block; margin-bottom: 4px; color: #e65100; }
+.idle-toast-btns { display: flex; gap: 8px; margin-top:10px; }
+
+.idle-modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(20,40,80,0.5);
+  z-index: 9997; align-items: center; justify-content: center;
+}
+.idle-modal-overlay.show { display: flex; }
+.idle-modal {
+  background: #fff;
+  border-radius: 10px;
+  padding: 28px 28px 20px;
+  width: 380px;
+  text-align: center;
+  box-shadow: 0 8px 40px rgba(20,40,80,0.2);
+}
+.idle-modal .idle-icon { font-size: 40px; margin-bottom: 10px; }
+.idle-modal h3 { font-size: 16px; color: #1a2535; margin-bottom: 8px; }
+.idle-modal p { font-size: 12px; color: #6a7a8a; line-height: 1.7; margin-bottom: 16px; }
+
+/* DATALIST owner input */
+td input[list] {
+  cursor: pointer;
+}
+td input[list]::-webkit-calendar-picker-indicator {
+  opacity: 0.4;
+  cursor: pointer;
+}
+
+/* BACKUP STATUS */
+.backup-indicator {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10px; color: rgba(255,255,255,0.55);
+  font-family: var(--font-mono);
+  margin-left: 8px;
+}
+.backup-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #4cff88; animation: blink 2s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-logo">
+    <div class="shield">🛡</div>
+    <div>
+      <div class="header-title">資訊資產盤點及風險評鑑工具</div>
+      <div class="header-subtitle">
+        ISO/IEC 27001 — Information Asset Inventory & Risk Assessment
+        <span class="backup-indicator"><span class="backup-dot"></span><span id="backupStatus">自動儲存中</span></span>
+      </div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="btn" onclick="openOptionsModal()">⚙ 選項管理</button>
+    <button class="btn" onclick="openRiskConfig()">📊 風險等級設定</button>
+    <button class="btn" onclick="openRestoreModal()" title="還原自動備份">🔄 還原備份</button>
+    <div class="toolbar-divider"></div>
+    <button class="btn" onclick="openSetupModal()" title="設定 Power Automate Webhook">🔧 提交設定</button>
+    <button class="btn btn-primary" onclick="openSubmitModal()" id="submitServerBtn">
+      ☁ 提交至 Excel 總表
+    </button>
+    <div class="toolbar-divider"></div>
+    <button class="btn btn-success" onclick="exportCSV()">⬇ 匯出 CSV</button>
+    <label class="btn" style="cursor:pointer;">
+      ⬆ 匯入 CSV <input type="file" accept=".csv" style="display:none" onchange="importCSV(event)">
+    </label>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- STATS -->
+  <div class="stats-bar" id="statsBar">
+    <div class="stat-card">
+      <div class="stat-icon">📋</div>
+      <div><div class="stat-value" id="statTotal">0</div><div class="stat-label">資產總數</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">⚠</div>
+      <div><div class="stat-value" id="statRisks">0</div><div class="stat-label">風險項目</div></div>
+    </div>
+    <div class="stat-divider"></div>
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+      <span style="font-size:11px;color:var(--text-muted);font-weight:600;letter-spacing:0.05em">篩選風險等級：</span>
+      <button class="filter-btn filter-A" id="filterA" onclick="toggleFilter('A')">
+        <span class="filter-count" id="statA">0</span> 等級 A
+      </button>
+      <button class="filter-btn filter-B" id="filterB" onclick="toggleFilter('B')">
+        <span class="filter-count" id="statB">0</span> 等級 B
+      </button>
+      <button class="filter-btn filter-C" id="filterC" onclick="toggleFilter('C')">
+        <span class="filter-count" id="statC">0</span> 等級 C
+      </button>
+      <button class="filter-btn filter-D" id="filterD" onclick="toggleFilter('D')">
+        <span class="filter-count" id="statD">0</span> 等級 D
+      </button>
+      <button class="btn btn-sm" id="clearFilter" onclick="clearAllFilters()" style="display:none;margin-left:4px">✕ 清除篩選</button>
+    </div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <button class="btn btn-primary" onclick="addAsset()">＋ 新增資產</button>
+    <div class="toolbar-divider"></div>
+    <button class="btn btn-sm" onclick="expandAll()">▼ 展開全部</button>
+    <button class="btn btn-sm" onclick="collapseAll()">▶ 收起全部</button>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrapper">
+    <table id="mainTable">
+      <thead>
+        <tr>
+          <th colspan="7" class="th-section th-group-inventory" style="border-right:2px solid rgba(26,111,212,0.3)">— 資訊資產盤點 Information Asset Inventory —</th>
+          <th colspan="6" class="th-section th-group-risk-base" style="border-right:2px solid rgba(176,122,0,0.3)">— 資產評估 Asset Evaluation —</th>
+          <th colspan="6" class="th-section th-group-vuln" style="border-right:2px solid rgba(204,42,34,0.3)">— 脆弱點 / 威脅 Vulnerability & Threat —</th>
+          <th colspan="2" class="th-section th-group-control">— 控制措施 Controls —</th>
+        </tr>
+        <tr>
+          <!-- 資訊資產盤點 (7) -->
+          <th class="col-asset-unit th-group-inventory">單位</th>
+          <th class="col-asset-type th-group-inventory">資產類別</th>
+          <th class="col-asset-name th-group-inventory">資產名稱</th>
+          <th class="col-asset-desc th-group-inventory">資產描述</th>
+          <th class="col-asset-loc th-group-inventory">存放位置</th>
+          <th class="col-qty th-group-inventory">數量</th>
+          <th class="col-asset-note th-group-inventory" style="border-right:2px solid rgba(26,111,212,0.3)">備註</th>
+          <!-- 資產評估 (6) -->
+          <th class="col-owner th-group-risk-base">資產擁有人</th>
+          <th class="col-owner th-group-risk-base">風險擁有人</th>
+          <th class="col-cia th-group-risk-base">C<br><small style="font-weight:400;font-size:9px">機密性</small></th>
+          <th class="col-cia th-group-risk-base">I<br><small style="font-weight:400;font-size:9px">完整性</small></th>
+          <th class="col-cia th-group-risk-base">A<br><small style="font-weight:400;font-size:9px">可用性</small></th>
+          <th class="col-av th-group-risk-base" style="border-right:2px solid rgba(176,122,0,0.3)">AV<br><small style="font-weight:400;font-size:9px">資產價值</small></th>
+          <!-- 脆弱點/威脅 (6) -->
+          <th class="col-vuln th-group-vuln">脆弱點</th>
+          <th class="col-score th-group-vuln">I<br><small style="font-weight:400;font-size:9px">衝擊</small></th>
+          <th class="col-threat th-group-vuln">威脅點</th>
+          <th class="col-score th-group-vuln">L<br><small style="font-weight:400;font-size:9px">機率</small></th>
+          <th class="col-rv th-group-vuln">風險值<br><small style="font-weight:400;font-size:9px">AV×I×L</small></th>
+          <th class="col-level th-group-vuln" style="border-right:2px solid rgba(204,42,34,0.3)">等級</th>
+          <!-- 控制措施 (2) -->
+          <th class="col-control th-group-control">控制措施</th>
+          <th class="col-action th-group-control">操作</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr id="emptyRow">
+          <td colspan="21">
+            <div class="empty-state">
+              <div class="empty-icon">🗂</div>
+              <div class="empty-text">尚無資產資料</div>
+              <div class="empty-sub">點擊「新增資產」開始建立盤點清單</div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- RISK CONFIG MODAL -->
+<div class="modal-overlay" id="riskConfigModal">
+  <div class="modal" style="width:480px">
+    <div class="modal-header">
+      <div class="modal-title">📊 風險等級範圍設定</div>
+      <button class="modal-close" onclick="closeModal('riskConfigModal')">✕</button>
+    </div>
+    <div class="risk-config-grid">
+      <div class="risk-config-item">
+        <div class="risk-config-label" style="color:var(--risk-a)">等級 A（最高）</div>
+        <div class="risk-config-inputs">
+          <input type="number" id="rangeAmin" value="60">
+          <span>～</span>
+          <input type="number" id="rangeAmax" value="108">
+        </div>
+      </div>
+      <div class="risk-config-item">
+        <div class="risk-config-label" style="color:var(--risk-b)">等級 B（高）</div>
+        <div class="risk-config-inputs">
+          <input type="number" id="rangeBmin" value="40">
+          <span>～</span>
+          <input type="number" id="rangeBmax" value="59">
+        </div>
+      </div>
+      <div class="risk-config-item">
+        <div class="risk-config-label" style="color:var(--risk-c)">等級 C（中）</div>
+        <div class="risk-config-inputs">
+          <input type="number" id="rangeCmin" value="24">
+          <span>～</span>
+          <input type="number" id="rangeCmax" value="39">
+        </div>
+      </div>
+      <div class="risk-config-item">
+        <div class="risk-config-label" style="color:var(--risk-d)">等級 D（低）</div>
+        <div class="risk-config-inputs">
+          <input type="number" id="rangeDmin" value="3">
+          <span>～</span>
+          <input type="number" id="rangeDmax" value="23">
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" onclick="closeModal('riskConfigModal')">取消</button>
+      <button class="btn btn-primary" onclick="saveRiskConfig()">套用設定</button>
+    </div>
+  </div>
+</div>
+
+<!-- OPTIONS MANAGER MODAL -->
+<div class="modal-overlay" id="optionsModal">
+  <div class="modal" style="width:680px">
+    <div class="modal-header">
+      <div class="modal-title">⚙ 選項管理（階層式設定）</div>
+      <button class="modal-close" onclick="closeModal('optionsModal')">✕</button>
+    </div>
+    <div class="modal-tabs">
+      <button class="tab-btn active" onclick="switchTab('tabVuln')">脆弱點庫</button>
+      <button class="tab-btn" onclick="switchTab('tabThreat')">威脅點庫</button>
+      <button class="tab-btn" onclick="switchTab('tabControl')">控制措施庫</button>
+      <button class="tab-btn" onclick="switchTab('tabUnit')">單位清單</button>
+    </div>
+    <div id="tabVuln" class="tab-content active" data-tab="tabVuln">
+      <div style="margin-bottom:8px;font-size:11px;color:var(--text-muted)">依資產類別分類管理脆弱點</div>
+      <div id="vulnOptionsList"></div>
+    </div>
+    <div id="tabThreat" class="tab-content" data-tab="tabThreat">
+      <div style="margin-bottom:8px;font-size:11px;color:var(--text-muted)">依資產類別分類管理威脅點</div>
+      <div id="threatOptionsList"></div>
+    </div>
+    <div id="tabControl" class="tab-content" data-tab="tabControl">
+      <div style="margin-bottom:8px;font-size:11px;color:var(--text-muted)">管理控制措施清單</div>
+      <div id="controlOptionsList"></div>
+    </div>
+    <div id="tabUnit" class="tab-content" data-tab="tabUnit">
+      <div style="margin-bottom:8px;font-size:11px;color:var(--text-muted)">管理單位清單</div>
+      <div id="unitOptionsList"></div>
+    </div>
+    <!-- JSON import/export bar -->
+    <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <div style="font-size:11px;color:var(--text-muted)">
+        💾 選項設定可匯出為 JSON 分享給團隊成員，或從他人的設定匯入
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn btn-success" onclick="exportOptionsJSON()">⬇ 匯出選項 JSON</button>
+        <label class="btn" style="cursor:pointer;">
+          ⬆ 匯入選項 JSON
+          <input type="file" accept=".json" style="display:none" onchange="importOptionsJSON(event)">
+        </label>
+        <button class="btn" onclick="resetDefaultOptions()">↺ 還原預設</button>
+        <button class="btn btn-primary" onclick="closeModal('optionsModal')">完成</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OPTIONS JSON IMPORT MODAL -->
+<div class="modal-overlay" id="importOptionsModal">
+  <div class="modal" style="width:460px">
+    <div class="modal-header">
+      <div class="modal-title">⬆ 匯入選項 JSON</div>
+      <button class="modal-close" onclick="closeModal('importOptionsModal')">✕</button>
+    </div>
+    <div style="font-size:13px;color:var(--text-secondary);margin-bottom:6px">
+      偵測到選項 JSON 檔案，請選擇匯入方式：
+    </div>
+    <div id="importOptionsPreview" style="background:var(--bg-tertiary);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:11px;color:var(--text-muted);margin-bottom:16px;line-height:1.8"></div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;padding:10px 12px;border:2px solid var(--border);border-radius:8px;transition:border-color 0.15s" id="optMergeLabel">
+        <input type="radio" name="importMode" value="merge" checked style="margin-top:2px">
+        <div>
+          <div style="font-weight:700;font-size:13px;color:var(--text-primary)">合併</div>
+          <div style="font-size:11px;color:var(--text-muted)">將匯入的選項追加至現有清單，保留目前所有內容，不刪除重複項</div>
+        </div>
+      </label>
+      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;padding:10px 12px;border:2px solid var(--border);border-radius:8px;transition:border-color 0.15s" id="optOverwriteLabel">
+        <input type="radio" name="importMode" value="overwrite" style="margin-top:2px">
+        <div>
+          <div style="font-weight:700;font-size:13px;color:var(--risk-a)">覆蓋</div>
+          <div style="font-size:11px;color:var(--text-muted)">以匯入的選項完全取代現有設定，目前的自訂項目將全部清除</div>
+        </div>
+      </label>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" onclick="closeModal('importOptionsModal')">取消</button>
+      <button class="btn btn-primary" onclick="confirmImportOptions()">確認匯入</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal" style="width:420px">
+    <div class="modal-header">
+      <div class="modal-title" id="confirmTitle">確認操作</div>
+      <button class="modal-close" onclick="closeModal('confirmModal')">✕</button>
+    </div>
+    <div id="confirmBody" style="font-size:13px;color:var(--text-secondary);line-height:1.7;margin-bottom:20px"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" onclick="closeModal('confirmModal')">取消</button>
+      <button class="btn btn-danger" id="confirmOkBtn">確認刪除</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESTORE BACKUP MODAL -->
+<div class="modal-overlay" id="restoreModal">
+  <div class="modal" style="width:500px">
+    <div class="modal-header">
+      <div class="modal-title">🔄 還原備份</div>
+      <button class="modal-close" onclick="closeModal('restoreModal')">✕</button>
+    </div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px">系統每 5 分鐘自動備份一次，保留最近 5 個時間點</div>
+    <div id="backupList" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div style="margin-top:16px;display:flex;justify-content:flex-end">
+      <button class="btn" onclick="closeModal('restoreModal')">關閉</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUBMIT TO SERVER MODAL -->
+<div class="modal-overlay" id="submitModal">
+  <div class="modal" style="width:480px">
+    <div class="modal-header">
+      <div class="modal-title">☁ 提交資料至 Excel 總表</div>
+      <button class="modal-close" onclick="closeModal('submitModal')">✕</button>
+    </div>
+
+    <!-- Step 1: 填寫者資訊 -->
+    <div id="submitStep1">
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;line-height:1.7">
+        填寫完成後，資料將透過 Power Automate 自動寫入 SharePoint Excel 總表，並記錄提交時間與版本。
+      </div>
+
+      <!-- 批次 ID 狀態（動態填入） -->
+      <div id="batchIdInfo" style="margin-bottom:12px"></div>
+
+      <div class="form-grid">
+        <div class="form-group form-full">
+          <label class="form-label">填寫者姓名 <span style="color:var(--danger)">*</span></label>
+          <input type="text" class="form-input" id="submitterName" placeholder="請輸入您的姓名">
+        </div>
+        <div class="form-group form-full">
+          <label class="form-label">填寫者單位</label>
+          <input type="text" class="form-input" id="submitterDept" placeholder="選填">
+        </div>
+        <div class="form-group form-full">
+          <label class="form-label">備註說明</label>
+          <input type="text" class="form-input" id="submitterNote" placeholder="選填，例如：Q2 盤點、初次填報…">
+        </div>
+      </div>
+
+      <!-- 資料摘要 -->
+      <div id="submitSummary" style="
+        margin-top:12px;padding:12px 14px;
+        background:var(--bg-tertiary);border:1px solid var(--border);
+        border-radius:6px;font-size:12px;line-height:1.9;
+        color:var(--text-secondary)
+      "></div>
+
+      <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn" onclick="closeModal('submitModal')">取消</button>
+        <button class="btn btn-primary" onclick="doSubmit()">確認提交 →</button>
+      </div>
+
+      <!-- 驗證錯誤摘要（提交時若有錯誤才顯示） -->
+      <div id="validationSummary" style="
+        display:none;margin-top:14px;padding:12px 14px;
+        background:#fde8e6;border:1px solid #e08080;border-radius:6px;
+      ">
+        <div style="font-size:11px;font-weight:700;color:#8a1a14;margin-bottom:6px">
+          ⚠ 以下欄位尚未填完整，請回頁面確認（紅色標記）後再提交：
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: 提交中 -->
+    <div id="submitStep2" style="display:none;text-align:center;padding:24px 0">
+      <div style="font-size:32px;margin-bottom:12px">⏳</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text-primary)">正在提交...</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:6px">資料傳送至 Power Automate 中，請稍候</div>
+    </div>
+
+    <!-- Step 3: 成功 -->
+    <div id="submitStep3" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:40px;margin-bottom:12px">✅</div>
+      <div style="font-size:15px;font-weight:700;color:var(--success);margin-bottom:8px">提交成功！</div>
+      <div id="submitSuccessMsg" style="font-size:12px;color:var(--text-muted);line-height:1.8"></div>
+      <div style="margin-top:20px;display:flex;gap:8px;justify-content:center">
+        <button class="btn btn-success" onclick="exportCSV();closeModal('submitModal')">⬇ 同時下載本地備份</button>
+        <button class="btn" onclick="closeModal('submitModal')">關閉</button>
+      </div>
+    </div>
+
+    <!-- Step 4: 失敗 -->
+    <div id="submitStep4" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:40px;margin-bottom:12px">❌</div>
+      <div style="font-size:14px;font-weight:700;color:var(--danger);margin-bottom:8px">提交失敗</div>
+      <div id="submitErrMsg" style="font-size:12px;color:var(--text-muted);line-height:1.8;margin-bottom:16px"></div>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <button class="btn btn-primary" onclick="showSubmitStep(1)">重新嘗試</button>
+        <button class="btn btn-success" onclick="exportCSV();closeModal('submitModal')">⬇ 先下載 CSV 備份</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETUP GUIDE MODAL -->
+<div class="modal-overlay" id="setupModal">
+  <div class="modal" style="width:620px;max-height:80vh">
+    <div class="modal-header">
+      <div class="modal-title">🔧 Power Automate 設定說明</div>
+      <button class="modal-close" onclick="closeModal('setupModal')">✕</button>
+    </div>
+    <div style="font-size:13px;line-height:1.9;color:var(--text-secondary)">
+
+      <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:6px;padding:12px 14px;margin-bottom:16px;font-size:12px">
+        ⚠️ 首次使用前，IT 或管理員需完成以下設定（約 20 分鐘）。設定完成後填入下方 Webhook URL，其他使用者不需要任何設定。
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+
+        <div style="padding:12px 14px;background:var(--bg-tertiary);border-radius:6px;border-left:3px solid var(--accent)">
+          <div style="font-weight:700;color:var(--text-primary);margin-bottom:6px">步驟一：建立 SharePoint Excel 總表</div>
+          <ol style="margin:0;padding-left:18px;font-size:12px;color:var(--text-muted);line-height:2">
+            <li>前往 SharePoint 或 OneDrive，新建一個 Excel 檔案</li>
+            <li>命名為「資產風險評鑑總表.xlsx」</li>
+            <li>在 Sheet1 第一列建立標題（見下方）</li>
+            <li>記下這個 Excel 檔案的 SharePoint 路徑</li>
+          </ol>
+          <div style="margin-top:8px;background:var(--bg-secondary);border-radius:4px;padding:8px 10px;font-size:10px;font-family:var(--font-mono);color:var(--text-muted);line-height:2;word-break:break-all">
+            提交時間 | 填寫者 | 填寫單位 | 備註說明 | 單位 | 資產類別 | 資產名稱 | 資產描述 | 存放位置 | 數量 | 資產擁有人 | 風險擁有人 | C | I | A | AV | 脆弱點 | 脆弱點衝擊 | 威脅點 | 威脅機率 | 風險值 | 風險等級 | 控制措施
+          </div>
+        </div>
+
+        <div style="padding:12px 14px;background:var(--bg-tertiary);border-radius:6px;border-left:3px solid var(--success)">
+          <div style="font-weight:700;color:var(--text-primary);margin-bottom:6px">步驟二：建立 Power Automate Flow</div>
+          <ol style="margin:0;padding-left:18px;font-size:12px;color:var(--text-muted);line-height:2">
+            <li>前往 <a href="https://make.powerautomate.com" target="_blank" style="color:var(--accent)">make.powerautomate.com</a>，用組織帳號登入</li>
+            <li>點「+ 建立」→「即時雲端流程」</li>
+            <li>觸發器選「<strong>當收到 HTTP 要求時</strong>」</li>
+            <li>加入動作：「<strong>Excel Online (Business) → 在表格中新增資料列</strong>」</li>
+            <li>選擇步驟一建立的 Excel 檔與 Sheet1</li>
+            <li>欄位對應：把 HTTP 觸發器收到的 JSON 欄位對應到 Excel 各欄</li>
+            <li>儲存 Flow 後，複製「HTTP POST URL」</li>
+          </ol>
+        </div>
+
+        <div style="padding:12px 14px;background:var(--bg-tertiary);border-radius:6px;border-left:3px solid var(--warning)">
+          <div style="font-weight:700;color:var(--text-primary);margin-bottom:6px">步驟三：填入 Webhook URL</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">將複製的 URL 貼到下方，儲存後所有使用者的提交都會送到你的 Excel。</div>
+          <div style="display:flex;gap:8px">
+            <input type="text" class="form-input" id="webhookUrlInput"
+              placeholder="https://prod-xx.eastus.logic.azure.com:443/workflows/..."
+              style="font-size:11px;font-family:var(--font-mono)">
+            <button class="btn btn-primary" onclick="saveWebhookUrl()" style="white-space:nowrap">儲存</button>
+          </div>
+          <div id="webhookSavedMsg" style="font-size:11px;color:var(--success);margin-top:6px;display:none">✅ 已儲存到瀏覽器本機，重開不遺失</div>
+        </div>
+
+      </div>
+
+      <div style="margin-top:16px;padding:10px 14px;background:var(--bg-tertiary);border-radius:6px;font-size:11px;color:var(--text-muted)">
+        💡 <strong>完整圖文說明</strong>請參考下載的「Power Automate 設定指南.pdf」
+      </div>
+    </div>
+    <div style="margin-top:16px;display:flex;justify-content:flex-end">
+      <button class="btn btn-primary" onclick="closeModal('setupModal')">完成</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast" style="position:fixed;bottom:24px;right:24px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--text-primary);z-index:9999;transform:translateY(80px);opacity:0;transition:all 0.25s;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(20,40,80,0.15)"></div>
+
+<!-- IDLE REMINDER TOAST (30分鐘) -->
+<div class="idle-toast" id="idleToast">
+  <strong>⏰ 你已閒置 30 分鐘</strong>
+  資料已自動儲存在瀏覽器中，但建議匯出 CSV 備份或提交至 Excel 總表。
+  <div class="idle-toast-btns">
+    <button class="btn btn-sm btn-success" onclick="exportCSV();dismissIdleToast()">⬇ 匯出 CSV</button>
+    <button class="btn btn-sm btn-primary" onclick="openSubmitModal();dismissIdleToast()">☁ 提交</button>
+    <button class="btn btn-sm" onclick="dismissIdleToast()">繼續填寫</button>
+  </div>
+</div>
+
+<!-- IDLE MODAL (60分鐘) -->
+<div class="idle-modal-overlay" id="idleModalOverlay">
+  <div class="idle-modal">
+    <div class="idle-icon">⏱</div>
+    <h3>你已閒置 60 分鐘</h3>
+    <p>資料儲存在瀏覽器中，<strong>關閉視窗不會遺失</strong>。<br>
+    但若切換瀏覽器或清除快取，資料可能消失。<br>
+    建議現在匯出 CSV 或提交至 Excel 總表。</p>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-success" onclick="exportCSV();closeIdleModal()">⬇ 匯出 CSV 備份</button>
+      <button class="btn btn-primary" onclick="openSubmitModal();closeIdleModal()">☁ 提交至 Excel 總表</button>
+      <button class="btn" onclick="closeIdleModal()">繼續填寫</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DEFAULT DATA
+// ============================================================
+const ASSET_TYPES = ['硬體','軟體','資訊','人員','服務'];
+
+const DEFAULT_OPTIONS = {
+  vulns: {
+    '硬體': [
+      '儲存媒體之維護不足／錯誤安裝',
+      '設備定期更換方案不足',
+      '對濕度、灰塵、髒污之耐受性不足',
+      '對電磁輻射之敏感性',
+      '組態變更控制措施不足',
+      '對電壓變化之耐受性不足',
+      '對溫度變化之耐受性不足',
+      '未受保護之儲存體',
+      '汰除時無人看顧',
+      '未受控制之複製',
+      '實體出入控制措施使用不適切',
+      '位於易遭水災之地區',
+      '不穩定之電網',
+      '建築物及門窗之實體保護不足',
+      '缺少火災偵測設備',
+      '缺少自動滅火系統',
+      '沒有電力調節設備',
+      '環境監控不足',
+      '缺乏環境保護',
+      '缺少備份設施或流程',
+      '技術設施維護不恰當',
+      '沒有回復資訊與資訊資產的營運持續管理與程序',
+    ].sort(),
+    '軟體': [
+      '無或不充分之軟體測試',
+      '軟體中眾所周知之缺點',
+      '離開工作站時未登出',
+      '汰除或再使用未適當抹除之儲存媒體',
+      '用於稽核存底目的之日誌的組態不足',
+      '資料輸入錯誤未被偵測或防止',
+      '廣泛散佈之軟體',
+      '複雜之使用者介面',
+      '文件不足或欠缺',
+      '不正確之參數設置',
+      '識別／鑑別機制不足',
+      '未受保護之通行碼表格',
+      '不良之通行碼管理',
+      '啟用非必要服務',
+      '不成熟軟體或新軟體',
+      '對開發者不明確或不完整之規格',
+      '無效之變更控制',
+      '未受控制之下載及使用軟體',
+      '欠缺或不完整之備份複本',
+      '缺少軟體變更管理規範與程序',
+      '未定期更新防毒軟體',
+      '未控制由網際網路下載及使用軟體',
+      '沒有防毒軟體',
+      '資通安全政策不足',
+      '未實施程式碼檢驗',
+    ].sort(),
+    '資訊': [
+      '資料分級錯誤或處理不當',
+      '缺乏加解密規範與控管機制',
+      '缺少邏輯上的存取安控',
+      '傳輸機密資料未加適當防護',
+      '通訊未加密',
+      '未受控制之資料及軟體複製',
+      '缺少接收訊息證明',
+      '缺乏身份鑑別與辨識機制',
+      '未保護通行碼檔',
+      '缺少實體安控',
+      '缺少有效的型態管理控制',
+      '備份失效或保存不當',
+      '存取權限不對',
+      '缺少變更管理控制',
+      '未制訂使用者註冊及解除註冊之正式程序',
+      '未制訂存取權限審查之正式過程',
+      '未制訂風險識別及評鑑之程序',
+      '持續計畫不存在、不完整或過時',
+      '未制訂機密資訊處理程序',
+      '桌面淨空及螢幕淨空政策不足',
+      '未正確實作安全漏洞監視機制',
+    ].sort(),
+    '人員': [
+      '人員缺席',
+      '不適切之招聘程序',
+      '安全教育訓練不足',
+      '不正確使用軟體及硬體',
+      '欠缺安全認知',
+      '監視機制不足或欠缺',
+      '外部或清潔人員工作未受監督',
+      '正確使用電信媒介及傳訊之政策無效或欠缺',
+      '缺少要求同仁不可在電話上提供資訊的規範',
+      '缺少資訊諮詢的規範',
+      '缺乏溝通導致離職同仁可存取系統',
+      '軟體開發者與作業人員的職責未釐清',
+      '程式人員監督不週',
+      '對有計畫的破壞行動缺乏懲戒處分',
+      '工作說明中未呈現資訊安全責任',
+      '與員工契約中資訊安全條款不足',
+      '未定義資安事故懲處過程',
+    ].sort(),
+    '服務': [
+      '證明發送或接收訊息之機制不足',
+      '未受保護之通訊線路',
+      '未受保護之敏感性訊務',
+      '不良之纜線接合',
+      '單點故障',
+      '發送者／接收者識別與鑑別機制無效或欠缺',
+      '不安全之網路架構',
+      '以明文傳送通行碼',
+      '不適切之網路管理',
+      '未受保護之公眾網路連線',
+      '缺乏應變計劃',
+      '容量不足',
+      '未釐清委外協議的權責',
+      '維護不當',
+      '缺乏線路圖或標示不明',
+      '缺乏使用規範',
+      '傳輸介面易遭破壞或干擾',
+      '缺乏備援與備份設備',
+      '缺乏意外處理機制',
+      '客戶及第三方契約中安全條款不足',
+      '服務水準協議不足或欠缺',
+    ].sort(),
+  },
+  threats: {
+    '硬體': [
+      '火災',
+      '水災',
+      '污染、有害輻射',
+      '重大事故',
+      '爆炸',
+      '灰塵、腐蝕、結凍',
+      '氣候現象',
+      '地震現象',
+      '氣象現象（暴風雨、颱風）',
+      '供應系統失效',
+      '冷卻或通風系統失效',
+      '電力供應喪失',
+      '電磁輻射',
+      '熱輻射',
+      '電磁脈衝',
+      '設備之竊取',
+      '破壞硬體',
+      '損壞裝置或媒體',
+      '設施之未經授權進入',
+      '恐怖、攻擊、破壞',
+      '裝置或系統之失效',
+      '極端的溫濕度',
+      '電源不穩',
+    ].sort(),
+    '軟體': [
+      '破壞軟體',
+      '使用網頁式通訊之路過式利用',
+      '重演攻擊／中間人攻擊',
+      '裝置之未經授權使用',
+      '使用偽造或複製之軟體',
+      '發送或分發惡意軟體',
+      '遠端刺探',
+      '源自不受信賴來源之資料輸入',
+      '裝置或系統之失效',
+      '資訊系統飽和',
+      '使用錯誤',
+      '濫用權限或許可',
+      '行動之阻絕（阻斷服務攻擊）',
+      '入侵（未授權存取系統）',
+      '未授權軟體變更',
+      '使用盜版軟體',
+      '惡意程式碼',
+    ].sort(),
+    '資訊': [
+      '媒體或文件之竊取',
+      '對回收或棄置媒體之檢索',
+      '資訊揭露',
+      '個人資料之未經授權處理',
+      '資料毀損',
+      '非法處理資料',
+      '社交工程',
+      '竊聽',
+      '未授權存取資料',
+      '資料外洩',
+      '冒充（身分偽造）',
+      '竄改或任意變更',
+      '破壞（資料與設施）',
+      '誤傳',
+      '偷竊',
+      '否認',
+    ].sort(),
+    '人員': [
+      '社交工程',
+      '恐怖、攻擊、破壞',
+      '數位識別資訊或信符之竊取',
+      '資訊揭露',
+      '個人資料之未經授權處理',
+      '裝置之不正確使用',
+      '使用錯誤',
+      '濫用權限或許可',
+      '偽造權限或許可',
+      '欠缺人員',
+      '欠缺資源',
+      '違反法令',
+      '作業人員或使用者錯誤',
+      '內部人員濫用權限',
+      '罷工',
+    ].sort(),
+    '服務': [
+      '電力供應喪失',
+      '電信網路失效',
+      '電信設備失效',
+      '裝置溢波之攔截',
+      '遠端刺探',
+      '重演攻擊／中間人攻擊',
+      '發送或分發惡意軟體',
+      '行動之阻絕（阻斷服務攻擊）',
+      '服務提供者之失效',
+      '干擾（通訊服務中斷）',
+      '中斷（服務不可用）',
+      '誤用',
+      '未授權存取資料',
+      '未授權軟體變更',
+      '社交工程',
+      '委外作業失能',
+      '詐欺',
+      '竄改或任意變更',
+    ].sort(),
+  },
+  controls: [
+    '防毒軟體部署與定期更新',
+    '備份機制建置與定期測試',
+    '變更管理程序',
+    '存取控制政策制定',
+    '帳號權限定期審查',
+    '最小權限原則落實',
+    '多因素認證（MFA）',
+    '通行碼管理政策',
+    '資料加密（傳輸中）',
+    '資料加密（靜態儲存）',
+    '網路加密通訊（TLS/VPN）',
+    '防火牆設置與規則管理',
+    '入侵偵測系統（IDS）部署',
+    '入侵防禦系統（IPS）部署',
+    '漏洞掃描與修補',
+    '滲透測試',
+    '軟體安全測試',
+    '程式碼安全審查',
+    '日誌收集與分析',
+    '安全監控與告警機制',
+    '實體門禁管制',
+    '監視攝影系統',
+    '實體媒體銷毀管理',
+    '設備汰除程序',
+    '機房環境監控（溫濕度、電力）',
+    '不斷電系統（UPS）',
+    '異地備援建置',
+    '業務持續計畫（BCP）',
+    '資安事故應變計畫',
+    '資安事故通報程序',
+    '供應商安全條款與審查',
+    '委外合約安全規範',
+    '服務水準協議（SLA）管理',
+    '使用者身份鑑別機制',
+    '數位簽章機制',
+    '訊息收送確認機制',
+    '軟體變更管理規範',
+    '未授權軟體使用限制',
+    '軟體授權稽核',
+    '網路架構安全設計',
+    '網路流量監控',
+    '單點故障排除（備援設計）',
+    '通訊線路保護',
+    '敏感資訊傳輸保護程序',
+    '資訊分類與標示政策',
+    '機密資訊處理程序',
+    '桌面淨空及螢幕淨空政策',
+    '資安教育訓練',
+    '資安意識宣導',
+    '社交工程防範訓練',
+    '人員招聘安全審查',
+    '離職人員帳號撤銷程序',
+    '工作說明書資安責任載明',
+    '懲戒處分程序',
+    '資安事故懲處程序',
+    '風險識別與評鑑程序',
+    '安全漏洞監視機制',
+    '弱點通報程序',
+    '稽核與合規定期審查',
+  ].sort(),
+  units: ['資訊部','行政部','財務部','業務部','人資部','研發部','營運部','法務部','稽核部'],
+  locations: [],
+};
+
+// ============================================================
+// CONTROL MAPPING: vuln/threat keyword → controls
+// ============================================================
+const CONTROL_MAP = [
+  { keys: ['火災','爆炸','重大事故'],
+    controls: ['實體門禁管制','機房環境監控（溫濕度、電力）','業務持續計畫（BCP）','異地備援建置','備份機制建置與定期測試'] },
+  { keys: ['水災','氣候現象','地震現象','氣象現象','暴風雨'],
+    controls: ['業務持續計畫（BCP）','異地備援建置','備份機制建置與定期測試','機房環境監控（溫濕度、電力）'] },
+  { keys: ['電力供應喪失','電源不穩','不穩定之電網','沒有電力調節設備'],
+    controls: ['不斷電系統（UPS）','機房環境監控（溫濕度、電力）','業務持續計畫（BCP）'] },
+  { keys: ['電磁輻射','熱輻射','電磁脈衝','對電磁輻射之敏感性'],
+    controls: ['機房環境監控（溫濕度、電力）','實體門禁管制'] },
+  { keys: ['極端的溫濕度','對溫度變化之耐受性不足','對濕度、灰塵、髒污之耐受性不足','環境監控不足'],
+    controls: ['機房環境監控（溫濕度、電力）','實體門禁管制','業務持續計畫（BCP）'] },
+  { keys: ['設備之竊取','偷竊','設施之未經授權進入','實體出入控制措施使用不適切','建築物及門窗之實體保護不足'],
+    controls: ['實體門禁管制','監視攝影系統','資產管理與盤點'] },
+  { keys: ['破壞硬體','損壞裝置或媒體','恐怖、攻擊、破壞','破壞（資料與設施）'],
+    controls: ['實體門禁管制','監視攝影系統','業務持續計畫（BCP）','備份機制建置與定期測試','懲戒處分程序'] },
+  { keys: ['設備定期更換方案不足','儲存媒體之維護不足','技術設施維護不恰當'],
+    controls: ['設備汰除程序','實體媒體銷毀管理','備份機制建置與定期測試'] },
+  { keys: ['汰除時無人看顧','汰除或再使用未適當抹除之儲存媒體','對回收或棄置媒體之檢索'],
+    controls: ['設備汰除程序','實體媒體銷毀管理'] },
+  { keys: ['缺少火災偵測設備','缺少自動滅火系統'],
+    controls: ['機房環境監控（溫濕度、電力）','業務持續計畫（BCP）'] },
+  { keys: ['沒有回復資訊與資訊資產的營運持續管理與程序','持續計畫不存在','業務持續','缺少備份設施或流程'],
+    controls: ['業務持續計畫（BCP）','備份機制建置與定期測試','異地備援建置','資安事故應變計畫'] },
+  { keys: ['沒有防毒軟體','未定期更新防毒軟體','惡意程式碼','發送或分發惡意軟體'],
+    controls: ['防毒軟體部署與定期更新','端點安全管理','未授權軟體使用限制'] },
+  { keys: ['軟體中眾所周知之缺點','未定期更新防毒軟體','漏洞','入侵（未授權存取系統）','遠端刺探','使用網頁式通訊之路過式利用','源自不受信賴來源之資料輸入'],
+    controls: ['漏洞掃描與修補','滲透測試','軟體安全測試','程式碼安全審查'] },
+  { keys: ['無或不充分之軟體測試','軟體程式錯誤','對開發者不明確或不完整之規格','系統發展生命週期'],
+    controls: ['軟體安全測試','程式碼安全審查','軟體變更管理規範'] },
+  { keys: ['無效之變更控制','缺少軟體變更管理規範與程序','未授權軟體變更','缺少變更管理控制','組態變更控制措施不足'],
+    controls: ['變更管理程序','軟體變更管理規範'] },
+  { keys: ['使用盜版軟體','未受控制之下載及使用軟體','未控制由網際網路下載及使用軟體','使用偽造或複製之軟體'],
+    controls: ['未授權軟體使用限制','軟體授權稽核'] },
+  { keys: ['識別／鑑別機制不足','未保護通行碼檔','不良之通行碼管理','以明文傳送通行碼','缺乏身份鑑別與辨識機制','冒充（身分偽造）'],
+    controls: ['通行碼管理政策','多因素認證（MFA）','使用者身份鑑別機制'] },
+  { keys: ['存取權限不對','未制訂存取權限審查之正式過程','缺少邏輯上的存取安控','裝置之未經授權使用','濫用權限或許可','偽造權限或許可','未授權存取資料'],
+    controls: ['存取控制政策制定','帳號權限定期審查','最小權限原則落實','多因素認證（MFA）'] },
+  { keys: ['未制訂使用者註冊及解除註冊之正式程序','缺乏溝通導致離職同仁可存取系統'],
+    controls: ['帳號權限定期審查','離職人員帳號撤銷程序'] },
+  { keys: ['欠缺或不完整之備份複本','備份失效或保存不當'],
+    controls: ['備份機制建置與定期測試','異地備援建置'] },
+  { keys: ['用於稽核存底目的之日誌的組態不足','缺少邏輯上的存取安控','未正確實作安全漏洞監視機制'],
+    controls: ['日誌收集與分析','安全監控與告警機制','安全漏洞監視機制'] },
+  { keys: ['通訊未加密','傳輸機密資料未加適當防護','未受保護之敏感性訊務','未受保護之通訊線路','竊聽','裝置溢波之攔截'],
+    controls: ['資料加密（傳輸中）','網路加密通訊（TLS/VPN）','敏感資訊傳輸保護程序','通訊線路保護'] },
+  { keys: ['缺乏加解密規範與控管機制'],
+    controls: ['資料加密（傳輸中）','資料加密（靜態儲存）','網路加密通訊（TLS/VPN）'] },
+  { keys: ['資料分級錯誤或處理不當','未制訂機密資訊處理程序','機密資訊'],
+    controls: ['資訊分類與標示政策','機密資訊處理程序'] },
+  { keys: ['桌面淨空及螢幕淨空政策不足'],
+    controls: ['桌面淨空及螢幕淨空政策'] },
+  { keys: ['未受控制之資料及軟體複製','未受控制之複製','媒體或文件之竊取'],
+    controls: ['實體媒體銷毀管理','存取控制政策制定','資訊分類與標示政策'] },
+  { keys: ['缺少接收訊息證明','否認','誤傳'],
+    controls: ['數位簽章機制','訊息收送確認機制'] },
+  { keys: ['未受保護之公眾網路連線','不安全之網路架構','網路管理不足','重演攻擊','中間人攻擊'],
+    controls: ['防火牆設置與規則管理','網路架構安全設計','網路流量監控','入侵偵測系統（IDS）部署'] },
+  { keys: ['資訊系統飽和','行動之阻絕','阻斷服務攻擊','容量不足','單點故障'],
+    controls: ['網路架構安全設計','單點故障排除（備援設計）','網路流量監控','業務持續計畫（BCP）'] },
+  { keys: ['社交工程','竊聽','缺少要求同仁不可在電話上提供資訊的規範','缺少資訊諮詢的規範'],
+    controls: ['社交工程防範訓練','資安意識宣導','資安教育訓練'] },
+  { keys: ['安全教育訓練不足','欠缺安全認知','使用錯誤','不正確使用軟體及硬體','作業人員或使用者錯誤'],
+    controls: ['資安教育訓練','資安意識宣導'] },
+  { keys: ['人員缺席','欠缺人員','欠缺資源','罷工'],
+    controls: ['業務持續計畫（BCP）','資安事故應變計畫'] },
+  { keys: ['不適切之招聘程序'],
+    controls: ['人員招聘安全審查'] },
+  { keys: ['離職同仁可存取系統','工作說明中未呈現資訊安全責任','與員工契約中資訊安全條款不足'],
+    controls: ['離職人員帳號撤銷程序','工作說明書資安責任載明'] },
+  { keys: ['對有計畫的破壞行動缺乏懲戒處分','未定義資安事故懲處過程'],
+    controls: ['懲戒處分程序','資安事故懲處程序'] },
+  { keys: ['資安事故','違反法令'],
+    controls: ['資安事故應變計畫','資安事故通報程序','稽核與合規定期審查'] },
+  { keys: ['未制訂風險識別及評鑑之程序'],
+    controls: ['風險識別與評鑑程序'] },
+  { keys: ['未正確實作安全漏洞監視機制','弱點'],
+    controls: ['安全漏洞監視機制','弱點通報程序','漏洞掃描與修補'] },
+  { keys: ['客戶及第三方契約中安全條款不足','服務水準協議不足或欠缺','未釐清委外協議的權責','委外作業失能','服務提供者之失效'],
+    controls: ['供應商安全條款與審查','委外合約安全規範','服務水準協議（SLA）管理'] },
+  { keys: ['干擾','中斷（服務不可用）','缺乏應變計劃','維護不當'],
+    controls: ['業務持續計畫（BCP）','服務水準協議（SLA）管理','備份機制建置與定期測試','單點故障排除（備援設計）'] },
+  { keys: ['詐欺'],
+    controls: ['存取控制政策制定','稽核與合規定期審查','日誌收集與分析'] },
+];
+
+let options = JSON.parse(localStorage.getItem('ra_options') || 'null') || JSON.parse(JSON.stringify(DEFAULT_OPTIONS));
+let assets = JSON.parse(localStorage.getItem('ra_assets') || '[]');
+let riskConfig = JSON.parse(localStorage.getItem('ra_risk_config') || 'null') || { A:[60,108], B:[40,59], C:[24,39], D:[3,23] };
+let assetIdCounter = parseInt(localStorage.getItem('ra_id_counter') || '0');
+let activeFilters = new Set();
+// Recent owners: keep last 3 unique entries for each field
+let recentOwners = JSON.parse(localStorage.getItem('ra_recent_owners') || '{"assetOwner":[],"riskOwner":[]}');
+// Recent locations: keep last 10 unique entries
+let recentLocations = JSON.parse(localStorage.getItem('ra_recent_locations') || '[]');
+
+function save() {
+  localStorage.setItem('ra_options', JSON.stringify(options));
+  localStorage.setItem('ra_assets', JSON.stringify(assets));
+  localStorage.setItem('ra_risk_config', JSON.stringify(riskConfig));
+  localStorage.setItem('ra_id_counter', assetIdCounter);
+  localStorage.setItem('ra_recent_owners', JSON.stringify(recentOwners));
+  localStorage.setItem('ra_recent_locations', JSON.stringify(recentLocations));
+  const now = new Date();
+  const t = now.toLocaleTimeString('zh-TW', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const el = document.getElementById('backupStatus');
+  if (el) el.textContent = `已儲存 ${t}`;
+}
+
+// ── Recent locations ─────────────────────────────────────────
+function trackLocation(value) {
+  const v = value.trim();
+  if (!v) return;
+  const idx = recentLocations.indexOf(v);
+  if (idx > -1) recentLocations.splice(idx, 1);
+  recentLocations.unshift(v);
+  if (recentLocations.length > 10) recentLocations.length = 10;
+  localStorage.setItem('ra_recent_locations', JSON.stringify(recentLocations));
+  // refresh all location datalists in DOM
+  document.querySelectorAll('datalist[data-field="loc"]').forEach(dl => {
+    dl.innerHTML = recentLocations.map(v => `<option value="${esc(v)}">`).join('');
+  });
+}
+
+function locInput(val, ai) {
+  const dlId = `dl-loc-${ai}`;
+  const opts = recentLocations.map(v => `<option value="${esc(v)}">`).join('');
+  return `<datalist id="${dlId}" data-field="loc">${opts}</datalist>
+    <input type="text" value="${esc(val)}" placeholder="存放位置" list="${dlId}"
+      onchange="updateAsset(${ai},'loc',this.value);trackLocation(this.value)">`;
+}
+
+// ── Auto-backup: keep last 5 snapshots every 5 minutes ────────
+function autoBackup() {
+  if (assets.length === 0) return;
+  const backups = JSON.parse(localStorage.getItem('ra_backups') || '[]');
+  const snap = {
+    ts: Date.now(),
+    assets: JSON.parse(JSON.stringify(assets)),
+    idCounter: assetIdCounter
+  };
+  backups.unshift(snap);
+  if (backups.length > 5) backups.length = 5;
+  localStorage.setItem('ra_backups', JSON.stringify(backups));
+}
+setInterval(autoBackup, 5 * 60 * 1000); // every 5 min
+
+// ── Warn before leaving if there's unsaved work ───────────────
+window.addEventListener('beforeunload', e => {
+  if (assets.length > 0) {
+    e.preventDefault();
+    e.returnValue = '您有資料尚未匯出，確定要離開？';
+    return e.returnValue;
+  }
+});
+
+// ── Track recent owner inputs ────────────────────────────────
+function trackOwner(field, value) {
+  const v = value.trim();
+  if (!v) return;
+  const list = recentOwners[field] || [];
+  const idx = list.indexOf(v);
+  if (idx > -1) list.splice(idx, 1);
+  list.unshift(v);
+  if (list.length > 3) list.length = 3;
+  recentOwners[field] = list;
+  localStorage.setItem('ra_recent_owners', JSON.stringify(recentOwners));
+  // refresh datalists
+  updateOwnerDatalist('assetOwner');
+  updateOwnerDatalist('riskOwner');
+}
+
+function updateOwnerDatalist(field) {
+  document.querySelectorAll(`datalist[data-field="${field}"]`).forEach(dl => {
+    dl.innerHTML = (recentOwners[field]||[]).map(v => `<option value="${esc(v)}">`).join('');
+  });
+}
+
+function ownerInput(field, val, ai) {
+  const dlId = `dl-${field}-${ai}`;
+  const opts = (recentOwners[field]||[]).map(v => `<option value="${esc(v)}">`).join('');
+  const placeholder = field === 'assetOwner' ? '資產擁有人' : '風險擁有人';
+  return `<datalist id="${dlId}" data-field="${field}">${opts}</datalist>
+    <input type="text" value="${esc(val)}" placeholder="${placeholder}" list="${dlId}"
+      onchange="updateAsset(${ai},'${field}',this.value);trackOwner('${field}',this.value)">`;
+}
+
+// ============================================================
+// RISK CALCULATION
+// ============================================================
+function calcRiskLevel(rv) {
+  if (rv >= riskConfig.A[0] && rv <= riskConfig.A[1]) return 'A';
+  if (rv >= riskConfig.B[0] && rv <= riskConfig.B[1]) return 'B';
+  if (rv >= riskConfig.C[0] && rv <= riskConfig.C[1]) return 'C';
+  if (rv >= riskConfig.D[0] && rv <= riskConfig.D[1]) return 'D';
+  return rv > riskConfig.A[1] ? 'A' : '—';
+}
+
+function calcAV(c, i, a) {
+  const v = (parseInt(c)||0) + (parseInt(i)||0) + (parseInt(a)||0);
+  return v || 0;
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function getMaxRiskLevel(asset) {
+  const av = calcAV(asset.c, asset.i, asset.a);
+  const levelOrder = { 'A': 4, 'B': 3, 'C': 2, 'D': 1 };
+  let maxOrder = 0, maxLevel = null;
+  asset.risks.forEach(r => {
+    const rv = av * (parseInt(r.impact)||0) * (parseInt(r.prob)||0);
+    if (rv > 0) {
+      const lv = calcRiskLevel(rv);
+      if (lv !== '—' && (levelOrder[lv] || 0) > maxOrder) {
+        maxOrder = levelOrder[lv];
+        maxLevel = lv;
+      }
+    }
+  });
+  return maxLevel;
+}
+
+function maxRiskSummaryBadge(asset) {
+  const lv = getMaxRiskLevel(asset);
+  if (!lv) {
+    return `<span class="max-risk-summary max-none"><span class="max-risk-label">風險情境最高等級</span><span class="max-risk-level">—</span></span>`;
+  }
+  return `<span class="max-risk-summary max-${lv}"><span class="max-risk-label">風險情境最高等級</span><span class="max-risk-level">${lv}</span></span>`;
+}
+
+function render() {
+  const tbody = document.getElementById('tableBody');
+  const hasFilter = activeFilters.size > 0;
+
+  if (assets.length === 0) {
+    tbody.innerHTML = `<tr id="emptyRow"><td colspan="22"><div class="empty-state"><div class="empty-icon">🗂</div><div class="empty-text">尚無資產資料</div><div class="empty-sub">點擊「新增資產」開始建立盤點清單</div></div></td></tr>`;
+    updateStats();
+    return;
+  }
+
+  let html = '';
+  assets.forEach((asset, ai) => {
+    const av = calcAV(asset.c, asset.i, asset.a);
+    const expanded = asset.expanded !== false;
+    const maxLv = getMaxRiskLevel(asset);
+
+    // Determine if asset should be visible under current filter
+    // Asset is shown if any of its risk rows match the filter, OR no filter active
+    let assetVisible = true;
+    if (hasFilter) {
+      assetVisible = asset.risks.some(r => {
+        const rv = av * (parseInt(r.impact)||0) * (parseInt(r.prob)||0);
+        if (rv <= 0) return false;
+        const lv = calcRiskLevel(rv);
+        return activeFilters.has(lv);
+      });
+    }
+    const assetHiddenClass = assetVisible ? '' : 'filter-hidden';
+
+    // Asset row
+    html += `<tr class="asset-row ${assetHiddenClass}" id="asset-row-${asset.id}">
+      <td class="col-asset-unit">${selectCell('unit', asset.unit, options.units, ai, null, 'asset')}</td>
+      <td class="col-asset-type">${typeSelectCell(asset.type, ai)}</td>
+      <td class="col-asset-name"><input type="text" value="${esc(asset.name)}" placeholder="資產名稱" onchange="updateAsset(${ai},'name',this.value)"></td>
+      <td class="col-asset-desc"><input type="text" value="${esc(asset.desc)}" placeholder="資產描述" onchange="updateAsset(${ai},'desc',this.value)"></td>
+      <td class="col-asset-loc">${locInput(asset.loc, ai)}</td>
+      <td class="col-qty"><input type="number" min="1" value="${asset.qty||1}" style="width:46px" onchange="updateAsset(${ai},'qty',this.value)"></td>
+      <td class="col-asset-note" style="border-right:2px solid rgba(26,111,212,0.15)"><input type="text" value="${esc(asset.note)}" placeholder="備註" onchange="updateAsset(${ai},'note',this.value)"></td>
+      <td class="col-owner">${ownerInput('assetOwner', asset.assetOwner, ai)}</td>
+      <td class="col-owner">${ownerInput('riskOwner', asset.riskOwner, ai)}</td>
+      <td class="col-cia">${scoreSelect('c', asset.c, ai, null, 'asset')}</td>
+      <td class="col-cia">${scoreSelect('i', asset.i, ai, null, 'asset')}</td>
+      <td class="col-cia">${scoreSelect('a', asset.a, ai, null, 'asset')}</td>
+      <td class="col-av" style="border-right:2px solid rgba(176,122,0,0.2)"><span class="av-badge" id="av-${asset.id}">${av||'—'}</span></td>
+      <td colspan="7" style="text-align:left;padding:6px 10px;vertical-align:middle;border-right:2px solid rgba(204,42,34,0.2)">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <button class="expand-btn" onclick="toggleRisks(${ai})">
+            ${expanded ? '▼' : '▶'} ${asset.risks.length} 組風險情境
+          </button>
+          <button class="btn btn-sm" onclick="addRisk(${ai})">＋ 新增風險</button>
+          ${maxRiskSummaryBadge(asset)}
+        </div>
+      </td>
+      <td class="col-action"><button class="btn btn-sm btn-danger" onclick="confirmDeleteAsset(${ai})">🗑 刪除資產</button></td>
+    </tr>`;
+
+    // Risk rows
+    if (expanded && asset.risks.length > 0) {
+      asset.risks.forEach((risk, ri) => {
+        const av2 = calcAV(asset.c, asset.i, asset.a);
+        const impact = parseInt(risk.impact) || 0;
+        const prob = parseInt(risk.prob) || 0;
+        const rv = av2 * impact * prob;
+        const level = rv > 0 ? calcRiskLevel(rv) : '—';
+
+        // Filter: hide risk row if filter active and level doesn't match
+        let riskHiddenClass = '';
+        if (hasFilter && rv > 0) {
+          riskHiddenClass = activeFilters.has(level) ? '' : 'filter-hidden';
+        } else if (hasFilter && rv <= 0) {
+          riskHiddenClass = 'filter-hidden';
+        }
+
+        html += `<tr class="risk-row ${riskHiddenClass}" id="risk-row-${asset.id}-${ri}">
+          <td colspan="7" style="padding-left:32px;border-right:2px solid rgba(26,111,212,0.2)">
+            <span style="color:var(--text-muted);font-size:10px;font-family:var(--font-mono)">┗ 風險情境 #${ri+1}</span>
+          </td>
+          <td class="col-owner" style="color:var(--text-muted);font-size:11px">${esc(asset.assetOwner)||'—'}</td>
+          <td class="col-owner" style="color:var(--text-muted);font-size:11px">${esc(asset.riskOwner)||'—'}</td>
+          <td class="col-cia">${scoreBadge(asset.c)}</td>
+          <td class="col-cia">${scoreBadge(asset.i)}</td>
+          <td class="col-cia">${scoreBadge(asset.a)}</td>
+          <td class="col-av" style="border-right:2px solid rgba(176,122,0,0.2)"><span class="av-badge">${av2||'—'}</span></td>
+          <td class="col-vuln">${vulnSelectCell(risk.vuln, asset.type, ai, ri)}</td>
+          <td class="col-score">${scoreSelect('impact', risk.impact, ai, ri, 'risk')}</td>
+          <td class="col-threat">${threatSelectCell(risk.threat, asset.type, ai, ri)}</td>
+          <td class="col-score">${scoreSelect('prob', risk.prob, ai, ri, 'risk')}</td>
+          <td class="col-rv" style="border-right:2px solid rgba(204,42,34,0.2)"><span class="risk-badge risk-val level-${level}" id="rv-${asset.id}-${ri}">${rv||'—'}</span></td>
+          <td class="col-level" style="border-right:2px solid rgba(204,42,34,0.2)"><span class="risk-badge level-${level}">${level}</span></td>
+          <td class="col-control">${controlSelectCell(risk.control, ai, ri)}</td>
+          <td class="col-action"><button class="btn btn-sm btn-danger" onclick="confirmDeleteRisk(${ai},${ri})">✕ 刪除情境</button></td>
+        </tr>`;
+      });
+    }
+  });
+
+  tbody.innerHTML = html;
+  updateStats();
+}
+
+function esc(s) { return (s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function scoreBadge(v) {
+  if (!v) return '<span style="color:var(--text-muted)">—</span>';
+  return `<span class="score-badge score-${v}">${v}</span>`;
+}
+
+function scoreSelect(field, val, ai, ri, rowType) {
+  const onchange = rowType === 'asset'
+    ? `updateAsset(${ai},'${field}',this.value)`
+    : `updateRisk(${ai},${ri},'${field}',this.value)`;
+  return `<select onchange="${onchange}" style="width:44px;text-align:center">
+    <option value="">—</option>
+    <option value="1" ${val==1?'selected':''}>1</option>
+    <option value="2" ${val==2?'selected':''}>2</option>
+    <option value="3" ${val==3?'selected':''}>3</option>
+  </select>`;
+}
+
+function selectCell(field, val, list, ai, ri, rowType) {
+  const onchange = rowType === 'asset'
+    ? `updateAsset(${ai},'${field}',this.value)`
+    : `updateRisk(${ai},${ri},'${field}',this.value)`;
+  let opts = `<option value="">請選擇...</option>`;
+  list.forEach(o => { opts += `<option value="${esc(o)}" ${val===o?'selected':''}>${esc(o)}</option>`; });
+  opts += `<option value="__custom__">✏ 自行輸入</option>`;
+  return `<select onchange="handleCustomSelect(this,'${field}',${ai},${ri},'${rowType}')">${opts}</select>`;
+}
+
+function typeSelectCell(val, ai) {
+  let opts = '';
+  ASSET_TYPES.forEach(t => { opts += `<option value="${t}" ${val===t?'selected':''}>${t}</option>`; });
+  return `<select onchange="updateAsset(${ai},'type',this.value);renderDebounce()">${opts}</select>`;
+}
+
+function vulnSelectCell(val, assetType, ai, ri) {
+  const list = options.vulns[assetType] || [];
+  let opts = `<option value="">請選擇...</option>`;
+  list.forEach(o => { opts += `<option value="${esc(o)}" ${val===o?'selected':''}>${esc(o)}</option>`; });
+  opts += `<option value="__custom__">✏ 自行輸入</option>`;
+  return `<select onchange="handleCustomSelect(this,'vuln',${ai},${ri},'risk')">${opts}</select>`;
+}
+
+function threatSelectCell(val, assetType, ai, ri) {
+  const list = options.threats[assetType] || [];
+  let opts = `<option value="">請選擇...</option>`;
+  list.forEach(o => { opts += `<option value="${esc(o)}" ${val===o?'selected':''}>${esc(o)}</option>`; });
+  opts += `<option value="__custom__">✏ 自行輸入</option>`;
+  return `<select onchange="handleCustomSelect(this,'threat',${ai},${ri},'risk')">${opts}</select>`;
+}
+
+function getMatchedControls(vuln, threat) {
+  const matched = new Set();
+  const text = (vuln + ' ' + threat).toLowerCase();
+  CONTROL_MAP.forEach(entry => {
+    if (entry.keys.some(k => text.includes(k.toLowerCase()))) {
+      entry.controls.forEach(c => matched.add(c));
+    }
+  });
+  // Always include all controls for custom option and fallback
+  return matched;
+}
+
+function controlSelectCell(val, ai, ri) {
+  const risk = assets[ai] && assets[ai].risks[ri];
+  const vuln = risk ? (risk.vuln || '') : '';
+  const threat = risk ? (risk.threat || '') : '';
+  const matched = getMatchedControls(vuln, threat);
+  const hasFilter = matched.size > 0;
+
+  let opts = `<option value="">請選擇...</option>`;
+  if (hasFilter) {
+    // Suggested controls based on vuln+threat
+    opts += `<optgroup label="── 建議控制措施 ──">`;
+    [...matched].sort().forEach(o => {
+      opts += `<option value="${esc(o)}" ${val===o?'selected':''}>${esc(o)}</option>`;
+    });
+    opts += `</optgroup>`;
+    // Remaining controls
+    const remaining = options.controls.filter(o => !matched.has(o));
+    if (remaining.length > 0) {
+      opts += `<optgroup label="── 其他控制措施 ──">`;
+      remaining.forEach(o => {
+        opts += `<option value="${esc(o)}" ${val===o?'selected':''}>${esc(o)}</option>`;
+      });
+      opts += `</optgroup>`;
+    }
+  } else {
+    // No filter — show all
+    options.controls.forEach(o => {
+      opts += `<option value="${esc(o)}" ${val===o?'selected':''}>${esc(o)}</option>`;
+    });
+  }
+  // Keep currently selected value even if not in list
+  if (val && !options.controls.includes(val) && val !== '__custom__') {
+    opts += `<option value="${esc(val)}" selected>${esc(val)}</option>`;
+  }
+  opts += `<option value="__custom__">✏ 自行輸入</option>`;
+  return `<select onchange="handleCustomSelect(this,'control',${ai},${ri},'risk')" style="min-width:170px">${opts}</select>`;
+}
+
+function handleCustomSelect(sel, field, ai, ri, rowType) {
+  if (sel.value === '__custom__') {
+    const v = prompt(`請輸入${field}的自訂值：`, '');
+    if (v !== null && v.trim()) {
+      sel.value = v.trim();
+      const opt = document.createElement('option');
+      opt.value = v.trim(); opt.text = v.trim(); opt.selected = true;
+      sel.insertBefore(opt, sel.lastElementChild);
+    } else {
+      sel.value = '';
+    }
+  }
+  if (rowType === 'asset') updateAsset(ai, field, sel.value);
+  else updateRisk(ai, ri, field, sel.value);
+}
+
+let renderTimer = null;
+function renderDebounce() {
+  clearTimeout(renderTimer);
+  renderTimer = setTimeout(render, 100);
+}
+
+// ============================================================
+// FILTER
+// ============================================================
+function toggleFilter(level) {
+  if (activeFilters.has(level)) {
+    activeFilters.delete(level);
+  } else {
+    activeFilters.add(level);
+  }
+  // Update button visual states
+  ['A','B','C','D'].forEach(lv => {
+    const btn = document.getElementById('filter' + lv);
+    if (btn) btn.classList.toggle('active', activeFilters.has(lv));
+  });
+  const clearBtn = document.getElementById('clearFilter');
+  if (clearBtn) clearBtn.style.display = activeFilters.size > 0 ? 'inline-flex' : 'none';
+  render();
+}
+
+function clearAllFilters() {
+  activeFilters.clear();
+  ['A','B','C','D'].forEach(lv => {
+    const btn = document.getElementById('filter' + lv);
+    if (btn) btn.classList.remove('active');
+  });
+  const clearBtn = document.getElementById('clearFilter');
+  if (clearBtn) clearBtn.style.display = 'none';
+  render();
+}
+
+// ============================================================
+// STATS
+// ============================================================
+function updateStats() {
+  let counts = {A:0,B:0,C:0,D:0,risks:0};
+  assets.forEach(a => {
+    const av = calcAV(a.c,a.i,a.a);
+    a.risks.forEach(r => {
+      counts.risks++;
+      const rv = av * (parseInt(r.impact)||0) * (parseInt(r.prob)||0);
+      if (rv > 0) {
+        const lv = calcRiskLevel(rv);
+        if (counts[lv] !== undefined) counts[lv]++;
+      }
+    });
+  });
+  document.getElementById('statTotal').textContent = assets.length;
+  document.getElementById('statRisks').textContent = counts.risks;
+  document.getElementById('statA').textContent = counts.A;
+  document.getElementById('statB').textContent = counts.B;
+  document.getElementById('statC').textContent = counts.C;
+  document.getElementById('statD').textContent = counts.D;
+}
+
+// ============================================================
+// ASSET / RISK CRUD
+// ============================================================
+function addAsset() {
+  assetIdCounter++;
+  assets.push({
+    id: assetIdCounter, expanded: true,
+    unit:'', type:'硬體', name:'', desc:'', loc:'', note:'',
+    assetOwner:'', riskOwner:'', qty:1, c:'', i:'', a:'',
+    risks:[]
+  });
+  save(); render();
+  showToast('✅ 已新增資產', 'success');
+}
+
+// ── Custom confirm modal ──────────────────────────────────────
+function showConfirm(title, bodyHtml, onOk, okLabel='確認刪除') {
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmBody').innerHTML = bodyHtml;
+  const btn = document.getElementById('confirmOkBtn');
+  btn.textContent = okLabel;
+  btn.onclick = () => { closeModal('confirmModal'); onOk(); };
+  openModal('confirmModal');
+}
+
+function confirmDeleteAsset(ai) {
+  const a = assets[ai];
+  const name = a.name || '（未命名）';
+  const riskCount = a.risks.length;
+  showConfirm(
+    '🗑 刪除整筆資產',
+    `確定要刪除資產「<strong>${esc(name)}</strong>」？<br>
+     <span style="color:var(--danger)">此資產底下共有 <strong>${riskCount}</strong> 組風險情境，將一併刪除。</span><br>
+     <span style="color:var(--text-muted);font-size:11px">此操作無法復原，請確認。</span>`,
+    () => { assets.splice(ai, 1); save(); render(); showToast('🗑 已刪除資產', ''); }
+  );
+}
+
+function confirmDeleteRisk(ai, ri) {
+  const a = assets[ai];
+  const assetName = a.name || '（未命名）';
+  const risk = a.risks[ri];
+  const desc = risk.vuln || risk.threat || `風險情境 #${ri+1}`;
+  showConfirm(
+    '✕ 刪除風險情境',
+    `確定要從「<strong>${esc(assetName)}</strong>」中刪除：<br>
+     <span style="color:var(--danger)">風險情境 #${ri+1}：${esc(desc)}</span><br>
+     <span style="color:var(--text-muted);font-size:11px">此操作無法復原，請確認。</span>`,
+    () => { assets[ai].risks.splice(ri, 1); save(); render(); showToast('✕ 已刪除風險情境', ''); },
+    '確認刪除'
+  );
+}
+
+// keep old functions as aliases for safety
+function deleteAsset(ai) { confirmDeleteAsset(ai); }
+function deleteRisk(ai, ri) { confirmDeleteRisk(ai, ri); }
+
+// ── Restore backup ────────────────────────────────────────────
+function openRestoreModal() {
+  const backups = JSON.parse(localStorage.getItem('ra_backups') || '[]');
+  const container = document.getElementById('backupList');
+  if (backups.length === 0) {
+    container.innerHTML = `<div style="color:var(--text-muted);font-size:12px;padding:12px 0">目前沒有自動備份紀錄。<br>系統每 5 分鐘自動備份一次（需有資料才會備份）。</div>`;
+  } else {
+    container.innerHTML = backups.map((b, i) => {
+      const d = new Date(b.ts);
+      const timeStr = d.toLocaleDateString('zh-TW') + ' ' + d.toLocaleTimeString('zh-TW', {hour:'2-digit',minute:'2-digit'});
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--text-primary)">${timeStr}</div>
+          <div style="font-size:11px;color:var(--text-muted)">共 ${b.assets.length} 筆資產，${b.assets.reduce((s,a)=>s+a.risks.length,0)} 組風險情境</div>
+        </div>
+        <button class="btn btn-sm btn-primary" onclick="restoreBackup(${i})">還原此備份</button>
+      </div>`;
+    }).join('');
+  }
+  openModal('restoreModal');
+}
+
+function restoreBackup(idx) {
+  const backups = JSON.parse(localStorage.getItem('ra_backups') || '[]');
+  const b = backups[idx];
+  if (!b) return;
+  showConfirm(
+    '🔄 確認還原備份',
+    `確定要還原到 <strong>${new Date(b.ts).toLocaleString('zh-TW')}</strong> 的備份？<br>
+     <span style="color:var(--danger)">目前所有資料將被備份內容取代。</span>`,
+    () => {
+      assets = JSON.parse(JSON.stringify(b.assets));
+      assetIdCounter = b.idCounter;
+      save(); closeModal('restoreModal'); render();
+      showToast('✅ 備份已還原', 'success');
+    },
+    '確認還原'
+  );
+}
+
+function updateAsset(ai, field, value) {
+  assets[ai][field] = value;
+  save();
+  if (['c','i','a'].includes(field)) {
+    // re-render to update AV and risk values
+    renderDebounce();
+  }
+}
+
+function addRisk(ai) {
+  assets[ai].expanded = true;
+  assets[ai].risks.push({ vuln:'', impact:'', threat:'', prob:'', control:'' });
+  save(); render();
+}
+
+function deleteRisk(ai, ri) {
+  assets[ai].risks.splice(ri, 1);
+  save(); render();
+}
+
+function updateRisk(ai, ri, field, value) {
+  assets[ai].risks[ri][field] = value;
+  save();
+  renderDebounce();
+}
+
+function toggleRisks(ai) {
+  assets[ai].expanded = !assets[ai].expanded;
+  save(); render();
+}
+
+function expandAll() {
+  assets.forEach(a => a.expanded = true);
+  save(); render();
+}
+
+function collapseAll() {
+  assets.forEach(a => a.expanded = false);
+  save(); render();
+}
+
+// ============================================================
+// MODALS
+// ============================================================
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+function openRiskConfig() {
+  document.getElementById('rangeAmin').value = riskConfig.A[0];
+  document.getElementById('rangeAmax').value = riskConfig.A[1];
+  document.getElementById('rangeBmin').value = riskConfig.B[0];
+  document.getElementById('rangeBmax').value = riskConfig.B[1];
+  document.getElementById('rangeCmin').value = riskConfig.C[0];
+  document.getElementById('rangeCmax').value = riskConfig.C[1];
+  document.getElementById('rangeDmin').value = riskConfig.D[0];
+  document.getElementById('rangeDmax').value = riskConfig.D[1];
+  openModal('riskConfigModal');
+}
+
+function saveRiskConfig() {
+  riskConfig = {
+    A: [parseInt(document.getElementById('rangeAmin').value), parseInt(document.getElementById('rangeAmax').value)],
+    B: [parseInt(document.getElementById('rangeBmin').value), parseInt(document.getElementById('rangeBmax').value)],
+    C: [parseInt(document.getElementById('rangeCmin').value), parseInt(document.getElementById('rangeCmax').value)],
+    D: [parseInt(document.getElementById('rangeDmin').value), parseInt(document.getElementById('rangeDmax').value)],
+  };
+  save(); closeModal('riskConfigModal'); render();
+  showToast('✅ 風險等級設定已更新', 'success');
+}
+
+// ============================================================
+// OPTIONS MANAGER
+// ============================================================
+function openOptionsModal() {
+  renderOptionsManager();
+  openModal('optionsModal');
+}
+
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function renderOptionsManager() {
+  // Vulns & Threats by type
+  ['vulns','threats'].forEach(kind => {
+    const containerId = kind === 'vulns' ? 'vulnOptionsList' : 'threatOptionsList';
+    const container = document.getElementById(containerId);
+    let html = '';
+    ASSET_TYPES.forEach(type => {
+      const list = options[kind][type] || [];
+      html += `<div style="margin-bottom:14px">
+        <div style="font-size:11px;font-weight:700;color:var(--text-secondary);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em">${type}</div>
+        <div class="option-manager" id="${kind}-${type}-list">
+          ${list.map((item,idx) => `
+            <div class="option-item">
+              <span class="option-item-text">${esc(item)}</span>
+              <div class="option-item-actions">
+                <button class="btn btn-sm btn-danger" onclick="removeOption('${kind}','${type}',${idx})">✕</button>
+              </div>
+            </div>`).join('')}
+          ${list.length === 0 ? '<div style="color:var(--text-muted);font-size:11px;padding:4px 0">（尚無項目）</div>' : ''}
+        </div>
+        <div class="add-option-row">
+          <input type="text" id="new-${kind}-${type}" placeholder="輸入新${kind==='vulns'?'脆弱點':'威脅點'}...">
+          <button class="btn btn-sm btn-primary" onclick="addOption('${kind}','${type}')">＋ 新增</button>
+        </div>
+      </div>`;
+    });
+    container.innerHTML = html;
+  });
+
+  // Controls
+  renderSimpleOptionList('controlOptionsList', 'controls', null);
+  renderSimpleOptionList('unitOptionsList', 'units', null);
+}
+
+function renderSimpleOptionList(containerId, kind, type) {
+  const container = document.getElementById(containerId);
+  const list = type ? (options[kind][type]||[]) : (options[kind]||[]);
+  let html = `<div class="option-manager">
+    ${list.map((item,idx) => `
+      <div class="option-item">
+        <span class="option-item-text">${esc(item)}</span>
+        <button class="btn btn-sm btn-danger" onclick="removeOption('${kind}',${type?`'${type}'`:'null'},${idx})">✕</button>
+      </div>`).join('')}
+    ${list.length === 0 ? '<div style="color:var(--text-muted);font-size:11px;padding:4px 0">（尚無項目）</div>' : ''}
+  </div>
+  <div class="add-option-row" style="margin-top:8px">
+    <input type="text" id="new-${kind}" placeholder="輸入新項目...">
+    <button class="btn btn-sm btn-primary" onclick="addOption('${kind}',null)">＋ 新增</button>
+  </div>`;
+  container.innerHTML = html;
+}
+
+function addOption(kind, type) {
+  const inputId = type ? `new-${kind}-${type}` : `new-${kind}`;
+  const input = document.getElementById(inputId);
+  const val = input.value.trim();
+  if (!val) return;
+  if (type) {
+    if (!options[kind][type]) options[kind][type] = [];
+    if (!options[kind][type].includes(val)) options[kind][type].push(val);
+  } else {
+    if (!options[kind].includes(val)) options[kind].push(val);
+  }
+  input.value = '';
+  save();
+  renderOptionsManager();
+}
+
+function removeOption(kind, type, idx) {
+  if (type && type !== 'null') options[kind][type].splice(idx, 1);
+  else options[kind].splice(idx, 1);
+  save();
+  renderOptionsManager();
+}
+
+function resetDefaultOptions() {
+  if (!confirm('確定還原所有選項至預設值？')) return;
+  options = JSON.parse(JSON.stringify(DEFAULT_OPTIONS));
+  save();
+  renderOptionsManager();
+  showToast('✅ 已還原預設選項', 'success');
+}
+
+// ── Options JSON export / import ─────────────────────────────
+function exportOptionsJSON() {
+  const payload = {
+    _version: 1,
+    _exportedAt: new Date().toISOString(),
+    _note: '資訊資產盤點風險評鑑工具 — 選項設定檔',
+    options: JSON.parse(JSON.stringify(options))
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `風險評鑑選項設定_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✅ 選項 JSON 已匯出', 'success');
+}
+
+let _pendingImportOptions = null;
+
+function importOptionsJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const payload = JSON.parse(e.target.result);
+      if (!payload.options) throw new Error('格式不正確，缺少 options 欄位');
+      _pendingImportOptions = payload.options;
+
+      // Build preview
+      const o = payload.options;
+      const countVulns = Object.values(o.vulns || {}).reduce((s,a) => s + a.length, 0);
+      const countThreats = Object.values(o.threats || {}).reduce((s,a) => s + a.length, 0);
+      const countControls = (o.controls || []).length;
+      const countUnits = (o.units || []).length;
+      const exportedAt = payload._exportedAt ? new Date(payload._exportedAt).toLocaleString('zh-TW') : '未知';
+
+      document.getElementById('importOptionsPreview').innerHTML =
+        `匯出時間：${exportedAt}<br>` +
+        `脆弱點：${countVulns} 項　威脅點：${countThreats} 項　控制措施：${countControls} 項　單位：${countUnits} 項`;
+
+      // Reset radio
+      document.querySelector('input[name="importMode"][value="merge"]').checked = true;
+      openModal('importOptionsModal');
+    } catch(err) {
+      showToast('❌ 匯入失敗：' + err.message, 'error');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function confirmImportOptions() {
+  if (!_pendingImportOptions) return;
+  const mode = document.querySelector('input[name="importMode"]:checked').value;
+  const imp = _pendingImportOptions;
+
+  if (mode === 'overwrite') {
+    options = JSON.parse(JSON.stringify(imp));
+  } else {
+    // merge: add items not already present
+    ['vulns','threats'].forEach(kind => {
+      if (!imp[kind]) return;
+      ASSET_TYPES.forEach(type => {
+        if (!imp[kind][type]) return;
+        if (!options[kind][type]) options[kind][type] = [];
+        imp[kind][type].forEach(item => {
+          if (!options[kind][type].includes(item)) options[kind][type].push(item);
+        });
+      });
+    });
+    ['controls','units'].forEach(key => {
+      if (!imp[key]) return;
+      if (!options[key]) options[key] = [];
+      imp[key].forEach(item => {
+        if (!options[key].includes(item)) options[key].push(item);
+      });
+    });
+  }
+
+  _pendingImportOptions = null;
+  save();
+  renderOptionsManager();
+  closeModal('importOptionsModal');
+  showToast(`✅ 選項已${mode === 'overwrite' ? '覆蓋' : '合併'}匯入`, 'success');
+}
+
+// ============================================================
+// EXPORT CSV
+// ============================================================
+function exportCSV() {
+  const headers = [
+    '單位','資產類別','資產名稱','資產描述','存放位置','備註',
+    '資產擁有人','風險擁有人','數量',
+    '機密性(C)','完整性(I)','可用性(A)','資產價值(AV)',
+    '脆弱點','脆弱點衝擊(I)','威脅點','威脅發生機率(L)',
+    '風險值(AV*I*L)','風險等級','控制措施'
+  ];
+  const rows = [headers];
+
+  assets.forEach(a => {
+    const av = calcAV(a.c, a.i, a.a);
+    if (a.risks.length === 0) {
+      rows.push([
+        a.unit, a.type, a.name, a.desc, a.loc, a.note,
+        a.assetOwner, a.riskOwner, a.qty,
+        a.c, a.i, a.a, av,
+        '','','','','',''
+      ]);
+    } else {
+      a.risks.forEach(r => {
+        const impact = parseInt(r.impact)||0;
+        const prob = parseInt(r.prob)||0;
+        const rv = av * impact * prob;
+        const level = rv > 0 ? calcRiskLevel(rv) : '';
+        rows.push([
+          a.unit, a.type, a.name, a.desc, a.loc, a.note,
+          a.assetOwner, a.riskOwner, a.qty,
+          a.c, a.i, a.a, av,
+          r.vuln, r.impact, r.threat, r.prob, rv||'', level, r.control
+        ]);
+      });
+    }
+  });
+
+  const csv = rows.map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `資訊資產風險評鑑_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✅ CSV 匯出成功', 'success');
+}
+
+// ============================================================
+// IMPORT CSV
+// ============================================================
+function importCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      let text = e.target.result;
+      if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+      const lines = text.split(/\r?\n/).filter(l => l.trim());
+      if (lines.length < 2) { showToast('❌ CSV 檔案內容不足', 'error'); return; }
+
+      let imported = 0;
+      for (let i = 1; i < lines.length; i++) {
+        const cols = parseCSVLine(lines[i]);
+        if (cols.length < 13) continue;
+        const [unit,type,name,desc,loc,note,assetOwner,riskOwner,qty,c,ii,a,av,...rest] = cols;
+        const [vuln,impact,threat,prob,rv,level,control] = rest;
+
+        // Find existing asset with same name+type or create new
+        let existingIdx = assets.findIndex(x => x.name === name && x.type === type && x.unit === unit);
+        if (existingIdx === -1) {
+          assetIdCounter++;
+          assets.push({
+            id: assetIdCounter, expanded: true,
+            unit, type: ASSET_TYPES.includes(type)?type:'硬體',
+            name, desc, loc, note,
+            assetOwner, riskOwner,
+            qty: parseInt(qty)||1,
+            c: ['1','2','3'].includes(c)?c:'',
+            i: ['1','2','3'].includes(ii)?ii:'',
+            a: ['1','2','3'].includes(a)?a:'',
+            risks: []
+          });
+          existingIdx = assets.length - 1;
+        }
+        if (vuln || threat) {
+          assets[existingIdx].risks.push({
+            vuln: vuln||'', impact: impact||'',
+            threat: threat||'', prob: prob||'',
+            control: control||''
+          });
+        }
+        imported++;
+      }
+      save(); render();
+      showToast(`✅ 成功匯入 ${imported} 筆資料（疊加至底部）`, 'success');
+    } catch(err) {
+      showToast('❌ CSV 匯入失敗：' + err.message, 'error');
+    }
+  };
+  reader.readAsText(file, 'UTF-8');
+  event.target.value = '';
+}
+
+function parseCSVLine(line) {
+  const result = [];
+  let inQuote = false, cur = '';
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') {
+      if (inQuote && line[i+1] === '"') { cur += '"'; i++; }
+      else inQuote = !inQuote;
+    } else if (c === ',' && !inQuote) {
+      result.push(cur); cur = '';
+    } else cur += c;
+  }
+  result.push(cur);
+  return result;
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type}`;
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ============================================================
+// POWER AUTOMATE SUBMIT — 版本管理 + 防重複
+// ============================================================
+
+// ── 批次 ID 管理 ─────────────────────────────────────────────
+// 批次 ID = 每位使用者唯一識別碼，儲存在 localStorage
+// 格式：姓名-單位-隨機碼，首次提交時產生，之後重提交沿用同一個 ID
+// Power Automate 收到後先把同 ID 舊列標為「已取代」，再插入新列
+
+function getBatchId() {
+  return localStorage.getItem('ra_batch_id') || '';
+}
+
+function getOrCreateBatchId(name, dept) {
+  let id = localStorage.getItem('ra_batch_id');
+  if (!id) {
+    // 首次：產生新 ID
+    const rand = Math.random().toString(36).slice(2, 7).toUpperCase();
+    id = `${name}-${dept || '未填單位'}-${rand}`;
+    localStorage.setItem('ra_batch_id', id);
+    localStorage.setItem('ra_batch_version', '0');
+  }
+  return id;
+}
+
+function getNextVersion() {
+  const v = parseInt(localStorage.getItem('ra_batch_version') || '0') + 1;
+  localStorage.setItem('ra_batch_version', String(v));
+  return v;
+}
+
+function resetBatchId() {
+  // 使用者主動重設（換人填報時用）
+  localStorage.removeItem('ra_batch_id');
+  localStorage.removeItem('ra_batch_version');
+  showToast('✅ 已重設批次 ID，下次提交將建立新記錄', 'success');
+  openSubmitModal();
+}
+
+// ── Webhook URL 管理 ─────────────────────────────────────────
+function getWebhookUrl() {
+  return localStorage.getItem('ra_webhook_url') || '';
+}
+function saveWebhookUrl() {
+  const url = document.getElementById('webhookUrlInput').value.trim();
+  if (!url) { showToast('❌ 請填入 Webhook URL', 'error'); return; }
+  if (!url.startsWith('https://')) { showToast('❌ URL 格式不正確', 'error'); return; }
+  localStorage.setItem('ra_webhook_url', url);
+  document.getElementById('webhookSavedMsg').style.display = 'block';
+  showToast('✅ Webhook URL 已儲存', 'success');
+}
+
+// ── 開啟設定 Modal ────────────────────────────────────────────
+function openSetupModal() {
+  const saved = getWebhookUrl();
+  const inp = document.getElementById('webhookUrlInput');
+  if (inp) inp.value = saved;
+  const msg = document.getElementById('webhookSavedMsg');
+  if (msg) msg.style.display = saved ? 'block' : 'none';
+  openModal('setupModal');
+}
+
+// ── 開啟提交 Modal ────────────────────────────────────────────
+function openSubmitModal() {
+  if (assets.length === 0) {
+    showToast('❌ 尚無資產資料可提交', 'error');
+    return;
+  }
+  showSubmitStep(1);
+
+  // 帶入上次儲存的姓名/單位
+  const lastName = localStorage.getItem('ra_last_submitter') || '';
+  const lastDept = localStorage.getItem('ra_last_dept') || '';
+  document.getElementById('submitterName').value = lastName;
+  document.getElementById('submitterDept').value = lastDept;
+  document.getElementById('submitterNote').value = '';
+
+  // 顯示既有批次 ID 和版本資訊
+  const existingId  = getBatchId();
+  const existingVer = parseInt(localStorage.getItem('ra_batch_version') || '0');
+  const batchInfoEl = document.getElementById('batchIdInfo');
+  if (existingId) {
+    batchInfoEl.innerHTML =
+      `<div style="background:#fff8e1;border:1px solid #ffe082;border-radius:6px;padding:10px 12px;font-size:11px;line-height:1.8">
+        <div>🔖 <strong>已有提交記錄：</strong>這不是你的第一次提交</div>
+        <div style="color:var(--text-muted)">批次 ID：<code style="background:#f0f0f0;padding:1px 4px;border-radius:3px">${existingId}</code></div>
+        <div style="color:var(--text-muted)">目前版本：第 <strong>${existingVer}</strong> 版　→　本次提交後將升為第 <strong>${existingVer+1}</strong> 版</div>
+        <div style="color:#cc2a22;margin-top:4px">⚠ Excel 總表中舊版資料將被標記為「已取代」</div>
+        <button class="btn btn-sm" onclick="resetBatchId()" style="margin-top:8px;font-size:10px">
+          🔄 這是不同人填報 → 重設批次 ID
+        </button>
+      </div>`;
+  } else {
+    batchInfoEl.innerHTML =
+      `<div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:10px 12px;font-size:11px;line-height:1.8;color:#2e7d32">
+        ✅ 這是你的第一次提交，系統將自動建立專屬批次 ID
+      </div>`;
+  }
+
+  // 資料摘要
+  let totalRisks = 0, counts = {A:0,B:0,C:0,D:0};
+  assets.forEach(a => {
+    const av = calcAV(a.c,a.i,a.a);
+    a.risks.forEach(r => {
+      totalRisks++;
+      const rv = av*(parseInt(r.impact)||0)*(parseInt(r.prob)||0);
+      if (rv>0) { const lv=calcRiskLevel(rv); if(counts[lv]!==undefined) counts[lv]++; }
+    });
+  });
+  const webhookSet = getWebhookUrl() ? '✅ 已設定' : '⚠️ 尚未設定（請先點「🔧 提交設定」）';
+  document.getElementById('submitSummary').innerHTML =
+    `📋 資產數量：<strong>${assets.length}</strong> 筆<br>` +
+    `⚠ 風險情境：<strong>${totalRisks}</strong> 組` +
+    `（<span style="color:var(--risk-a)">A:${counts.A}</span> ` +
+    `<span style="color:var(--risk-b)">B:${counts.B}</span> ` +
+    `<span style="color:var(--risk-c)">C:${counts.C}</span> ` +
+    `<span style="color:var(--risk-d)">D:${counts.D}</span>）<br>` +
+    `🔗 Webhook：${webhookSet}`;
+
+  openModal('submitModal');
+}
+
+function showSubmitStep(n) {
+  [1,2,3,4].forEach(i => {
+    const el = document.getElementById('submitStep'+i);
+    if (el) el.style.display = i===n ? '' : 'none';
+  });
+}
+
+// ── 執行提交（含防連點） ──────────────────────────────────────
+let _isSubmitting = false;
+
+async function doSubmit() {
+  if (_isSubmitting) return; // 防止連點
+
+  const name = document.getElementById('submitterName').value.trim();
+  const dept = document.getElementById('submitterDept').value.trim();
+  const note = document.getElementById('submitterNote').value.trim();
+  const webhookUrl = getWebhookUrl();
+
+  if (!name) { showToast('❌ 請填寫填寫者姓名', 'error'); return; }
+  if (!webhookUrl) {
+    showToast('❌ 尚未設定 Webhook URL，請先點「🔧 提交設定」', 'error');
+    return;
+  }
+
+  // ── B 必填驗證 ────────────────────────────────────────────
+  const { valid, errors: validErrors } = validateAll();
+  if (!valid) {
+    highlightErrors(validErrors);
+    const valSummaryEl = document.getElementById('validationSummary');
+    if (valSummaryEl) {
+      valSummaryEl.innerHTML = buildValidationSummary(validErrors);
+      valSummaryEl.style.display = 'block';
+    }
+    showToast(`⚠ 有 ${validErrors.length} 筆資料尚未填完整，請確認紅色標記欄位`, 'error');
+    return;
+  }
+  // 清除驗證提示
+  const valSummaryEl = document.getElementById('validationSummary');
+  if (valSummaryEl) valSummaryEl.style.display = 'none';
+  document.querySelectorAll('.has-error,.field-error').forEach(el =>
+    el.classList.remove('has-error','field-error'));
+
+  _isSubmitting = true;
+  showSubmitStep(2);
+
+  // 記住填寫者資訊
+  localStorage.setItem('ra_last_submitter', name);
+  localStorage.setItem('ra_last_dept', dept);
+
+  // 取得或建立批次 ID 與版本號
+  const batchId = getOrCreateBatchId(name, dept);
+  const version  = getNextVersion();
+
+  const timestamp = new Date().toLocaleString('zh-TW', {
+    timeZone: 'Asia/Taipei',
+    year:'numeric', month:'2-digit', day:'2-digit',
+    hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false
+  });
+
+  // 展開資料列，每列帶上版本控制欄位
+  const rows = [];
+  assets.forEach(a => {
+    const av = calcAV(a.c,a.i,a.a);
+    const base = {
+      批次ID:     batchId,
+      版本:       `v${version}`,
+      狀態:       '最新版',
+      提交時間:   timestamp,
+      填寫者:     name,
+      填寫單位:   dept,
+      備註說明:   note,
+      單位:       a.unit   || '',
+      資產類別:   a.type   || '',
+      資產名稱:   a.name   || '',
+      資產描述:   a.desc   || '',
+      存放位置:   a.loc    || '',
+      數量:       a.qty    || 1,
+      資產擁有人: a.assetOwner || '',
+      風險擁有人: a.riskOwner  || '',
+      C機密性:    a.c || '',
+      I完整性:    a.i || '',
+      A可用性:    a.a || '',
+      AV資產價值: av || '',
+    };
+    if (a.risks.length === 0) {
+      rows.push({ ...base, 脆弱點:'', 脆弱點衝擊:'', 威脅點:'', 威脅機率:'', 風險值:'', 風險等級:'', 控制措施:'' });
+    } else {
+      a.risks.forEach(r => {
+        const impact = parseInt(r.impact)||0;
+        const prob   = parseInt(r.prob)||0;
+        const rv     = av * impact * prob;
+        rows.push({
+          ...base,
+          脆弱點:     r.vuln    || '',
+          脆弱點衝擊: impact    || '',
+          威脅點:     r.threat  || '',
+          威脅機率:   prob      || '',
+          風險值:     rv>0 ? rv : '',
+          風險等級:   rv>0 ? calcRiskLevel(rv) : '',
+          控制措施:   r.control || '',
+        });
+      });
+    }
+  });
+
+  try {
+    const resp = await fetch(webhookUrl, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        rows,
+        meta: {
+          batchId,
+          version,
+          submitter:   name,
+          dept,
+          note,
+          timestamp,
+          totalAssets: assets.length,
+          totalRows:   rows.length,
+          // Flow 需要用 batchId + version 找舊列並標為「已取代」
+          previousVersion: version > 1 ? `v${version - 1}` : null,
+        }
+      }),
+    });
+
+    if (resp.ok || resp.status === 202 || resp.status === 200) {
+      showSubmitStep(3);
+      const isUpdate = version > 1;
+      document.getElementById('submitSuccessMsg').innerHTML =
+        `提交時間：${timestamp}<br>` +
+        `填寫者：${name}${dept ? '（'+dept+'）' : ''}<br>` +
+        `批次 ID：<code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:10px">${batchId}</code><br>` +
+        `版本：<strong>v${version}</strong>${isUpdate
+          ? `　<span style="color:var(--warning)">（更新提交，舊版 v${version-1} 已標記為「已取代」）</span>`
+          : `　<span style="color:var(--success)">（首次提交）</span>`}<br>` +
+        `共提交 ${rows.length} 筆資料列<br>` +
+        `<span style="color:var(--text-muted);font-size:11px">資料已送至 Power Automate，稍後將出現在 SharePoint Excel 總表</span>`;
+      showToast('✅ 已成功提交至 Excel 總表', 'success');
+    } else {
+      throw new Error(`伺服器回傳 ${resp.status}`);
+    }
+  } catch (e) {
+    // 提交失敗時將版本號退回，避免版本空洞
+    localStorage.setItem('ra_batch_version', String(version - 1));
+    showSubmitStep(4);
+    document.getElementById('submitErrMsg').innerHTML =
+      `錯誤訊息：${e.message}<br><br>` +
+      `<strong>常見原因：</strong><br>` +
+      `・Webhook URL 已過期或填寫錯誤<br>` +
+      `・Power Automate Flow 已關閉<br>` +
+      `・網路連線問題<br><br>` +
+      `<span style="color:var(--text-muted);font-size:11px">版本號已自動退回，重試不會產生版本跳號。</span><br><br>` +
+      `建議先下載 CSV 備份，再請管理員確認 Flow 狀態。`;
+  } finally {
+    _isSubmitting = false;
+  }
+}
+
+// ============================================================
+// B — 必填欄位驗證
+// ============================================================
+
+// 驗證規則定義
+const REQUIRED_ASSET_FIELDS = [
+  { key: 'name',  label: '資產名稱',   check: v => v && v.trim() !== '' },
+  { key: 'c',     label: '機密性(C)',   check: v => ['1','2','3'].includes(String(v)) },
+  { key: 'i',     label: '完整性(I)',   check: v => ['1','2','3'].includes(String(v)) },
+  { key: 'a',     label: '可用性(A)',   check: v => ['1','2','3'].includes(String(v)) },
+];
+
+const REQUIRED_RISK_FIELDS = [
+  { key: 'vuln',   label: '脆弱點',       check: v => v && v.trim() !== '' },
+  { key: 'impact', label: '脆弱點衝擊',   check: v => ['1','2','3'].includes(String(v)) },
+  { key: 'threat', label: '威脅點',       check: v => v && v.trim() !== '' },
+  { key: 'prob',   label: '威脅機率',     check: v => ['1','2','3'].includes(String(v)) },
+];
+
+function validateAll() {
+  /**
+   * 檢查所有資產的必填欄位。
+   * 回傳 { valid: bool, errors: [{ assetIdx, assetName, missingAsset, missingRisks }] }
+   */
+  const errors = [];
+
+  assets.forEach((asset, ai) => {
+    const missingAsset = REQUIRED_ASSET_FIELDS
+      .filter(f => !f.check(asset[f.key]))
+      .map(f => f.label);
+
+    const riskErrors = [];
+    if (asset.risks.length === 0) {
+      riskErrors.push({ ri: -1, label: '尚無風險情境（每筆資產至少需填一組）', missing: [] });
+    } else {
+      asset.risks.forEach((risk, ri) => {
+        const missing = REQUIRED_RISK_FIELDS
+          .filter(f => !f.check(risk[f.key]))
+          .map(f => f.label);
+        if (missing.length > 0) riskErrors.push({ ri, label: `風險情境 #${ri+1}`, missing });
+      });
+    }
+
+    if (missingAsset.length > 0 || riskErrors.length > 0) {
+      errors.push({
+        ai,
+        assetName: asset.name || `（第 ${ai+1} 筆，未命名）`,
+        missingAsset,
+        riskErrors,
+      });
+    }
+  });
+
+  return { valid: errors.length === 0, errors };
+}
+
+function highlightErrors(errors) {
+  // 清除所有舊錯誤樣式
+  document.querySelectorAll('.has-error, .field-error').forEach(el => {
+    el.classList.remove('has-error', 'field-error');
+  });
+
+  if (errors.length === 0) return;
+
+  // 展開有錯誤的資產
+  errors.forEach(({ ai }) => {
+    if (!assets[ai].expanded) {
+      assets[ai].expanded = true;
+    }
+  });
+  // 重新渲染以套用展開狀態
+  render();
+
+  // 標記錯誤列和欄位
+  errors.forEach(({ ai, missingAsset, riskErrors }) => {
+    const assetRow = document.getElementById(`asset-row-${assets[ai].id}`);
+    if (assetRow) {
+      assetRow.classList.add('has-error');
+      // 標記資產層必填欄位
+      if (missingAsset.includes('資產名稱')) {
+        const td = assetRow.querySelector('.col-asset-name');
+        if (td) td.classList.add('field-error');
+      }
+      ['機密性(C)','完整性(I)','可用性(A)'].forEach((label, ci) => {
+        if (missingAsset.includes(label)) {
+          const tds = assetRow.querySelectorAll('.col-cia');
+          if (tds[ci]) tds[ci].classList.add('field-error');
+        }
+      });
+    }
+    // 標記風險情境層必填欄位
+    riskErrors.forEach(({ ri, missing }) => {
+      if (ri < 0) return;
+      const riskRow = document.getElementById(`risk-row-${assets[ai].id}-${ri}`);
+      if (!riskRow) return;
+      if (missing.includes('脆弱點'))     riskRow.querySelector('.col-vuln') ?.classList.add('field-error');
+      if (missing.includes('脆弱點衝擊')) riskRow.querySelectorAll('.col-score')[0]?.classList.add('field-error');
+      if (missing.includes('威脅點'))     riskRow.querySelector('.col-threat')?.classList.add('field-error');
+      if (missing.includes('威脅機率'))   riskRow.querySelectorAll('.col-score')[1]?.classList.add('field-error');
+    });
+  });
+
+  // 捲動到第一個錯誤
+  const firstErr = document.getElementById(`asset-row-${assets[errors[0].ai].id}`);
+  if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function buildValidationSummary(errors) {
+  if (errors.length === 0) return '';
+  let html = `<div style="max-height:200px;overflow-y:auto;font-size:11px;line-height:1.8">`;
+  errors.forEach(({ assetName, missingAsset, riskErrors }) => {
+    html += `<div style="margin-bottom:8px">
+      <div style="font-weight:700;color:var(--danger)">⚠ ${esc(assetName)}</div>`;
+    if (missingAsset.length > 0) {
+      html += `<div style="color:var(--text-muted);padding-left:12px">資產欄位未填：${missingAsset.join('、')}</div>`;
+    }
+    riskErrors.forEach(({ label, missing }) => {
+      html += `<div style="color:var(--text-muted);padding-left:12px">
+        ${label}${missing.length > 0 ? '：' + missing.join('、') : ''}
+      </div>`;
+    });
+    html += `</div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+// ============================================================
+// C — 閒置偵測與提醒
+// ============================================================
+const IDLE_WARN_MS  = 30 * 60 * 1000; // 30 分鐘 → 右下角 Toast
+const IDLE_MODAL_MS = 60 * 60 * 1000; // 60 分鐘 → 強制 Modal
+let _idleWarnTimer  = null;
+let _idleModalTimer = null;
+let _idleToastShown = false;
+
+function resetIdleTimer() {
+  clearTimeout(_idleWarnTimer);
+  clearTimeout(_idleModalTimer);
+  // 如果 Toast 已顯示就收起
+  if (_idleToastShown) dismissIdleToast();
+
+  if (assets.length === 0) return; // 沒有資料不需要提醒
+
+  _idleWarnTimer = setTimeout(() => {
+    if (assets.length > 0) {
+      document.getElementById('idleToast').classList.add('show');
+      _idleToastShown = true;
+    }
+  }, IDLE_WARN_MS);
+
+  _idleModalTimer = setTimeout(() => {
+    if (assets.length > 0) {
+      dismissIdleToast();
+      document.getElementById('idleModalOverlay').classList.add('show');
+    }
+  }, IDLE_MODAL_MS);
+}
+
+function dismissIdleToast() {
+  document.getElementById('idleToast').classList.remove('show');
+  _idleToastShown = false;
+}
+
+function closeIdleModal() {
+  document.getElementById('idleModalOverlay').classList.remove('show');
+  resetIdleTimer(); // 使用者互動後重置計時器
+}
+
+// 監聽使用者互動來重置計時器
+['mousemove','keydown','click','scroll','touchstart'].forEach(evt => {
+  document.addEventListener(evt, resetIdleTimer, { passive: true });
+});
+
+// ============================================================
+// 整合到 doSubmit 的前置驗證
+// ============================================================
+// ============================================================
+// INIT
+// ============================================================
+render();
+resetIdleTimer();
+</script>
+</body>
+</html>
